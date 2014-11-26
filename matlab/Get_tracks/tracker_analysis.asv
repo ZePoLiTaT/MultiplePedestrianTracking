@@ -1,6 +1,6 @@
-clear all, clc, close all
+clear all, clc
 
-vid_id = 2;
+vid_id = 1;
 
 % NT file names
 nt_cor_file = sprintf('../../data/shop%d_zntmod_cor_out.txt',vid_id);
@@ -8,9 +8,6 @@ nt_cor_file = sprintf('../../data/shop%d_zntmod_cor_out.txt',vid_id);
 % GT file names
 gt_corimg_file = sprintf('../../data/OneLeaveShop%dcor0000.jpg',vid_id);
 gt_cor_file = sprintf('../../data/tracks%d_cor_fro.mat',vid_id);
-
-gt_froimg_file = sprintf('../../data/OneLeaveShop%dfront0000.jpg',vid_id);
-
 
 % 
 % % Read the naive tracker data
@@ -36,12 +33,10 @@ gt_froimg_file = sprintf('../../data/OneLeaveShop%dfront0000.jpg',vid_id);
 % 
 % pause
 
-%-----------------------------------------------------------------
-% GROUND TRUTH
-%-----------------------------------------------------------------
+% % NB the tracks in this example are out by 73frames i.e. cor00073 corresponds to front000000
+% % see the timestamp on the frame to manually align other sequences
 load(gt_cor_file);
-
-% Corridor image
+% 
 figure(80);imshow(imread(gt_corimg_file));
 hold on, plot(tracks_cor(:,:,1),tracks_cor(:,:,2),'.');
 
@@ -50,11 +45,9 @@ lbl = cellstr(num2str(lbl))';
 lbl = strtrim(lbl);
 legend( lbl )
 
-% Front image
-figure(81);imshow(imread(gt_froimg_file));
-hold on, plot(tracks_fro(:,:,1),tracks_fro(:,:,2),'.');
-
-lbl = [1:length(tracks_fro(1,:,1))]';
-lbl = cellstr(num2str(lbl))';
-lbl = strtrim(lbl);
-legend( lbl )
+% for i=1:length(tracks_cor(1,:,1))
+%     lbl{i} = num2str(i);
+%     %hold on, text(tracks_cor(1,i,1),tracks_cor(1,i,2),num2str(i));
+%     %pause
+% end
+% legend(lbl)

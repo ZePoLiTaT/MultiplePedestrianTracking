@@ -37,10 +37,14 @@ double calculateDistance(Rect &detection, Rect &track)
 
 void showinfo(vector<TrackState> &state, unsigned int frameNumber, ostream &out)
 {
+	Point detectionCenter;
+
 	for (size_t i = 0; i < state.size(); i++)
 	{
 		if (state[i].lastTrackedFrame == frameNumber)
 		{
+			detectionCenter = Point((state[i].track.x + state[i].track.width) / 2.0f, (state[i].track.y + state[i].track.height) / 2.0f);
+
 			out << " " << frameNumber 
 				<< "," << i
 				<< "," << state[i].track.x
