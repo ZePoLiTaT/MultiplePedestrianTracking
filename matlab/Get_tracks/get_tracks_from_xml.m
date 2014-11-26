@@ -18,8 +18,15 @@ no_frames = length(t.dataset.frame)
 % for every frame
 for j=1:no_frames
 
+    if isfield(t.dataset.frame{j}.objectlist,'object')
+        no_people = length(t.dataset.frame{j}.objectlist.object);
+    else
+        no_people = 0;
+        tracks(j,1,1) = 0;
+    end
+    
     % for every person in the frame
-    no_people = length(t.dataset.frame{j}.objectlist.object);
+    
     for i=1:no_people
    
         % pick out the centroids
