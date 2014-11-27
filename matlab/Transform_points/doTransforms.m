@@ -1,11 +1,18 @@
 %% work out homography for CAVIAR dataset
 %lab exercise for b31xn
 %calum blair 29/1/12
-clear all
+
 close all
 %get tracks
 try
+    % --------------------------------------------------------
+    % OneLeaveShop1
+    % --------------------------------------------------------
 	load tracks_cor_fro_wh;
+    % --------------------------------------------------------
+    % OneLeaveShop2
+    % --------------------------------------------------------
+    %load tracks2_cor_fro;
 catch
 	caviar_data_extraction;
 end
@@ -14,11 +21,24 @@ if s3<4
 	warning('need to extract width & height from XML or point transforms wont work');
 	warning('do this then re-save in tracks_cor_mat');
 end
+
+% --------------------------------------------------------
+% OneLeaveShop1
+% --------------------------------------------------------
 %open videos
-vc = VideoReader('../../data/OneLeaveShop1cor.mpg');
-vf = VideoReader('../../data/OneLeaveShop1front.mpg');
+vc = VideoReader('OneLeaveShop1cor.mpg');
+vf = VideoReader('OneLeaveShop1front.mpg');
 %set time difference between cameras
 td = 77;
+
+% --------------------------------------------------------
+% OneLeaveShop2
+% --------------------------------------------------------
+%open videos
+%vc = VideoReader('OneLeaveShop2cor.mpg');
+%vf = VideoReader('OneLeaveShop2front.mpg');
+%set time difference between cameras
+%td = 77;
 
 %registration points from CAVIAR page
 %note y-coordinates are reversed from the matlab standard
@@ -92,9 +112,23 @@ base(fby(1):fby(2),fbx(1):fbx(2),:) = im2double(fBase(1:fby(2)-fby(1)+1,1:fbx(2)
 figure(iB),imshow(base)
 	
 %% check transform of GT points too
+
+%
+[~,peopleC,~] = size(tracks_cor(t,:,1:2));
+[~,peopleF,~] = size(tracks_fro(t+td,:,1:2));
+
 %get points for a specfic frame
 gtC = squeeze(tracks_cor(t,:,1:2));
 gtF = squeeze(tracks_fro(t+td,:,1:2));
+
+if peopleC == 1
+    gtC = gtC';
+end
+
+if peopleF == 1
+    gtF = gtF';
+end
+    
 x=1;y=2;
 %transform them to base plane
 baseGTC = tformfwd(c2b,gtC(:,x),gtC(:,y));
@@ -104,16 +138,36 @@ figure(iB),hold on;
 plot(baseGTC(:,x),baseGTC(:,y),'bo')
 plot(baseGTF(:,x),baseGTF(:,y),'go')
 %% match a specific person id and plot with dot
+
+% --------------------------------------------------------
+% OneLeaveShop2
+% --------------------------------------------------------
+%idF=1; idC = 2;
+
+% --------------------------------------------------------
+% OneLeaveShop1
+% --------------------------------------------------------
 idF=2; idC = 6;
+
 plot(baseGTF(idF,x),baseGTF(idF,y),'g.')
 plot(baseGTC(idC,x),baseGTC(idC,y),'b.')
 %% hmm. points transform ok but don't match up. try again using the feet
 %or bottom of bbox,anyway
 w=3;h=4;
 gtCfeet = squeeze(tracks_cor(t,:,:));
-gtCfeet(:,y) = ceil(gtCfeet(:,y) + gtCfeet(:,h)/2);
 gtFfeet = squeeze(tracks_fro(t+td,:,:));
+
+if peopleC == 1
+    gtCfeet = gtCfeet';
+end
+
+if peopleF == 1
+    gtFfeet = gtFfeet';
+end
+
+gtCfeet(:,y) = ceil(gtCfeet(:,y) + gtCfeet(:,h)/2);
 gtFfeet(:,y) = ceil(gtFfeet(:,y) + gtFfeet(:,h)/2);
+
 %transform and plot
 baseGTCfeet = tformfwd(c2b,gtCfeet(:,x),gtCfeet(:,y));
 baseGTFfeet = tformfwd(f2b,gtFfeet(:,x),gtFfeet(:,y));
@@ -136,3 +190,64 @@ plot(gtFfeet(:,x),gtFfeet(:,y),'yo')
 FfromCfeet = tforminv(f2b,baseGTCfeet(:,x),baseGTCfeet(:,y));
 plot(FfromCfeet(:,x),FfromCfeet(:,y),'r*')
 
+%--------------------------------------------------------------------------
+% convert to ground plane
+%--------------------------------------------------------------------------
+nt_path = 'OneLeaveShop1cor_NTracks.txt';
+gt = tracks_cor;
+T = c2b;
+
+[ nt_gp, gt_gp, nt ] = save_gp_proj( nt_path, gt, T );
+
+% test for person 2
+
+idx_p2 = nt(:,2) == 2;
+p2 = nt(idx_p2,:);
+p2_gp = nt_gp(idx_p2,:);
+
+gt_gp_p2 = gt_gp(:,6,1:2);
+
+f = p2(1,1);
+
+rF = [50 95 300 115];
+rC = [50 60 240 205];
+t=f;
+imgC = vc.read(t);
+imgF = vf.read(t+td);
+%plot rectangles
+iC=1; iF=2; iB=3;
+figure(iC),imshow(imgC); drawnow
+hold on; rectangle('Position',rC,'EdgeColor','red');
+figure(iF),imshow(imgF); drawnow
+hold on; rectangle('Position',rF,'EdgeColor','red');
+
+%crop the images
+patchF = imcrop(imgF,rF);
+patchC = imcrop(imgC,rC);
+
+%transform them - extra options needed here. dont use whole images either
+[fBase fbx fby] = imtransform(patchF,f2b,'XYScale',1,'UData',[rF(1) rF(1)+rF(3)],'VData',[rF(2) rF(2)+rF(4)]);
+[cBase cbx cby] = imtransform(patchC,c2b,'XYScale',1,'UData',[rC(1) rC(1)+rC(3)],'VData',[rC(2) rC(2)+rC(4)]);
+assert(cbx(1)>0); assert(cby(1)>0);
+cbx=ceil(cbx); cby=ceil(cby);
+assert(fbx(1)>0); assert(fby(1)>0);
+fbx=ceil(fbx); fby=ceil(fby);
+
+%[fbx fby] tells us where images go on base plane
+base = zeros(yb,xb,3);
+base(cby(1):cby(2),cbx(1):cbx(2),:) = im2double(cBase(1:cby(2)-cby(1)+1,1:cbx(2)-cbx(1)+1,:));
+%front overwrites corridor...
+base(fby(1):fby(2),fbx(1):fbx(2),:) = im2double(fBase(1:fby(2)-fby(1)+1,1:fbx(2)-fbx(1)+1,:));
+figure(iB),imshow(base)
+
+figure(iB),hold on;
+plot(p2_gp(:,1),p2_gp(:,2),'go')
+
+figure(iC),hold on;
+plot(p2(:,7),p2(:,8),'yo')
+
+figure(iB),hold on;
+plot(gt(:,6,1),gt(:,6,2),'r.')
+
+figure(iC),hold on;
+plot(p2(:,7),p2(:,8),'yo')

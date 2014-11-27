@@ -1,9 +1,6 @@
-function [gt_pos, nt_pos, first_det_frame, last_det_frame] = load_naive_tracks( path_zt, path_gt, nt_id, gt_id )
+function [gt_pos, nt_pos, first_det_frame, last_det_frame] = load_naive_tracks( path_zt, tracks_cor, nt_id, gt_id )
 %LOAD_NAIVE_TRACKS Summary of this function goes here
 %   Detailed explanation goes here
-
-    % Load the .mat file from the groundtruth
-    load(path_gt);
 
     % Read the naive tracker data file
     [ nt_frames, nt_ppl, naive_tracker ] = read_data(path_zt);

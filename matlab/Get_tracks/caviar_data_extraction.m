@@ -7,7 +7,7 @@ clear all, clc
 %--------------------------------------------------------------------------
 % Parse XML Files and save the result in a mat file
 %--------------------------------------------------------------------------
-vid_id = 2;
+vid_id = 1;
 % read the xml file for the corridor
 file = sprintf('../../data/cols%dgt.xml',vid_id);
 % parse the xml into a matlab "struct"
