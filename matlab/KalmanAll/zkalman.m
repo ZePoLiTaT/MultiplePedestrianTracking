@@ -1,6 +1,48 @@
 clc; clear; %close all;
-
 addpath(genpath('.'))
+
+%--------------------------------------------------------------------------
+%   TEST SELECTION
+%--------------------------------------------------------------------------
+vid_id = 1;
+
+seq = 'cor';
+%seq = 'front';
+
+%folder = '/gplane';
+folder = '';
+
+% Id's correspondences
+%gt_id = 6; nt_id = 2;     % cor1: Person 1
+%gt_id = 2; nt_id = 2;      % fro1: Person 1
+
+%gt_id = 1; nt_id = 2;      % cor2: Person 1
+%gt_id = 5; nt_id = 11;     % cor2: Person 2
+
+% ----> 1. Naive tracker detections
+nt_cor_file = sprintf('../../data%s/OneLeaveShop%d%s_NTracks.txt',folder,vid_id,seq);
+
+% ----> 2. Ground truth
+gt_cor_file = sprintf('../../data%s/tracks%d_cor_fro.mat',folder,vid_id);
+load(gt_cor_file);
+
+if strcmp(seq, 'cor')
+    tracks = tracks_cor;
+    if vid_id == 1
+        gt_id = 6; nt_id = 2;       % cor1: Person 1
+    else
+        gt_id = 1; nt_id = 2;       % cor2: Person 1
+        %gt_id = 5; nt_id = 11;     % cor2: Person 2
+    end
+else
+    tracks = tracks_fro;
+    
+    if vid_id == 1
+        gt_id = 2; nt_id = 2;      % fro1: Person 1
+    end    
+end
+
+
 % Make a point move in the 2D plane
 % State = (x y xdot ydot). We only observe (x y).
 
@@ -24,26 +66,17 @@ H = [1 0 0 0;
 Q = 0.1*eye(ss);
 R = 1*eye(os);
 
-% initx = [10 10 1 0]';
-% initV = 10*eye(ss);
-% seed = 9;
-% rand('state', seed);
-% randn('state', seed);
-% T = 15;
-% [x,y] = sample_lds(F, H, Q, R, initx, T);
 
-gt_id = 5; nt_id = 11;
-[x, y, first_det_frame, last_det_frame] = load_naive_tracks('../../data/shop2_zntmod_cor_out.txt', '../../data/cols2gt_cor.mat', nt_id, gt_id );
-%person_id = 1;
-%[x, y, first_det_frame] = load_naive_tracks('cols2ztrack_cor.txt', 'cols2gt_cor.mat', person_id );
+[x, y, first_det_frame, last_det_frame] = ...
+    load_naive_tracks(nt_cor_file, tracks, nt_id, gt_id );
 
-% % Remove observations before the first detection
-% y = y( :, first_det_frame:end );
-% x = x( :, first_det_frame:end );
+% [x, y, first_det_frame, last_det_frame] = load_naive_tracks( ...
+%     '../../data/shop2_zntmod_cor_out.txt', ...
+%     '../../data/cols2gt_cor.mat', nt_id, gt_id );
 
 % Remove observations before the first detection
 % and remove observations THRS_F frames after the last detection
-THRS_F = 30;
+THRS_F = 5;
 y = y( :, first_det_frame:last_det_frame+THRS_F );
 x = x( :, first_det_frame:last_det_frame+THRS_F );
 
@@ -59,10 +92,19 @@ T = size(x,2);
 [xfilt, Vfilt, VVfilt, loglik] = kalman_filter(y, F, H, Q, R, initx, initV);
 [xsmooth, Vsmooth] = kalman_smoother(y, F, H, Q, R, initx, initV);
 
+ix_gt_zeros = all(x~=0);
+ix_nt_zeros = all(y~=(-1));
+
+dnt = x([1 2],:) - y([1 2],:);
+dnt = dnt( :, ix_gt_zeros & ix_nt_zeros );
+mse_dnt = sqrt(sum(sum(dnt.^2)))
+
 dfilt = x([1 2],:) - xfilt([1 2],:);
+dfilt = dfilt( :, ix_gt_zeros  );
 mse_filt = sqrt(sum(sum(dfilt.^2)))
 
 dsmooth = x([1 2],:) - xsmooth([1 2],:);
+dsmooth = dsmooth(:, ix_gt_zeros  );
 mse_smooth = sqrt(sum(sum(dsmooth.^2)))
 
 
