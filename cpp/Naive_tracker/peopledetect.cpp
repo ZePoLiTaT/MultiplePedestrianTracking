@@ -28,22 +28,22 @@ typedef struct _trackState
 
 double calculateDistance(Rect &detection, Rect &track)
 {
-	Point detectionCenter = Point((detection.x + detection.width) / 2.0f, (detection.y + detection.height) / 2.0f);
-	Point trackCenter = Point((track.x + track.width) / 2.0f, (track.y + track.height) / 2.0f);
-	Point difference = detectionCenter - trackCenter;
+	Point2f detectionCenter = Point2f((detection.x + detection.width) / 2.0f, (detection.y + detection.height) / 2.0f);
+	Point2f trackCenter = Point2f((track.x + track.width) / 2.0f, (track.y + track.height) / 2.0f);
+	Point2f difference = detectionCenter - trackCenter;
 
 	return cv::sqrt( difference.x*difference.x + difference.y*difference.y );
 }
 
 void showinfo(vector<TrackState> &state, unsigned int frameNumber, ostream &out)
 {
-	Point detectionCenter;
+	Point2f detectionCenter;
 
 	for (size_t i = 0; i < state.size(); i++)
 	{
 		if (state[i].lastTrackedFrame == frameNumber)
 		{
-			detectionCenter = Point((state[i].track.x + state[i].track.width) / 2.0f, (state[i].track.y + state[i].track.height) / 2.0f);
+			detectionCenter = Point2f(state[i].track.x + (state[i].track.width / 2.0f), state[i].track.y + (state[i].track.height / 2.0f));
 
 			out << " " << frameNumber 
 				<< "," << i
@@ -51,6 +51,8 @@ void showinfo(vector<TrackState> &state, unsigned int frameNumber, ostream &out)
 				<< "," << state[i].track.y
 				<< "," << state[i].track.width
 				<< "," << state[i].track.height
+				<< "," << detectionCenter.x
+				<< "," << detectionCenter.y
 				<< endl;
 		}
 		/*else
@@ -157,6 +159,7 @@ int main(int argc, char** argv)
 
     HOGDescriptor hog;
     hog.setSVMDetector(HOGDescriptor::getDefaultPeopleDetector());
+	//hog.setSVMDetector(HOGDescriptor::getDaimlerPeopleDetector());
     namedWindow("people detector", 1);
 
     for(int frameNumber=0;;++frameNumber)
@@ -179,6 +182,7 @@ int main(int argc, char** argv)
         //printf("%s:\n", filename);
         if(!img.data)
             continue;
+		resize(img, img, Size(), 1.1, 1.1, INTER_LINEAR);
 
         fflush(stdout);
         vector<Rect> found, found_filtered;
@@ -186,7 +190,10 @@ int main(int argc, char** argv)
         // run the detector with default parameters. to get a higher hit-rate
         // (and more false alarms, respectively), decrease the hitThreshold and
         // groupThreshold (set groupThreshold to 0 to turn off the grouping completely).
-        hog.detectMultiScale(img, found, 0, Size(8,8), Size(32,32), 1.05, 2);
+        //hog.detectMultiScale(img, found, 0, Size(8,8), Size(32,32), 1.05, 2);
+		hog.detectMultiScale(img, found, 0.3, Size(8, 8), Size(32, 32), 1.05, 1.5, false);
+
+
         t = (double)getTickCount() - t;
         //printf("tdetection time = %gms\n", t*1000./cv::getTickFrequency());
         size_t i, j;
@@ -216,17 +223,18 @@ int main(int argc, char** argv)
         }
 
 		match(found_filtered, state, frameNumber);
-		//showinfo(state, frameNumber, cout);
-		showinfo(state, frameNumber, fout);
+		
+		//showinfo(state, frameNumber, fout);
 
 		imshow("people detector", img);
 
-		/*if (frameNumber > 145)
+		if (frameNumber > 190)
 		{
-		int c = waitKey(0) & 255;
-		if (c == 'q' || c == 'Q' || !f)
-		break;
-		}*/
+			showinfo(state, frameNumber, cout);
+			int c = waitKey(0) & 255;
+			if (c == 'q' || c == 'Q' || !f)
+				break;
+		}
 
     }
     if(f)
