@@ -2,7 +2,6 @@ function [ ] = plot_kalman_filter( gt_pos, nt_pos, xsmooth, gp_img )
 %PLOT_KALMAN_FILTER Summary of this function goes here
 %   Detailed explanation goes here
 
-    figure
     imshow(gp_img)
     hold on;
     %set(gca,'ydir','reverse')
@@ -16,8 +15,8 @@ function [ ] = plot_kalman_filter( gt_pos, nt_pos, xsmooth, gp_img )
     % end
     hold off
     legend('true', 'observed', 'smoothed', 3)
-    xlabel('x')
-    ylabel('y')
+%     xlabel('x')
+%     ylabel('y')
 
 
     % 3x3 inches

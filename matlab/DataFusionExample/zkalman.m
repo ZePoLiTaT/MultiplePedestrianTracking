@@ -170,14 +170,18 @@ for t=INIT:END
 end
 
 % Plot the results
-plot_kalman_filter( sensor1.gt, sensor1.obs, sensor1.predictions, gp_img )
-plot_kalman_filter( sensor2.gt, sensor2.obs, sensor2.predictions, gp_img )
+figure(1); plot_kalman_filter( sensor1.gt, sensor1.obs, sensor1.predictions, gp_img )
+figure(2); plot_kalman_filter( sensor2.gt, sensor2.obs, sensor2.predictions, gp_img )
 
 % Concatenate gt and observations
 fused.gt = [sensor1.gt,sensor2.gt];
 fused.obs = [sensor1.obs,sensor2.obs];
 
-plot_kalman_filter( fused.gt, fused.obs, winnerTakesAll, gp_img )
+figure(3); plot_kalman_filter( fused.gt, fused.obs, winnerTakesAll, gp_img )
 
 % Calculate the MSE
 %[ mse_dnt_cor, mse_filt_cor ] = calculate_mse( sensor1.predictions, sensor1.gt, sensor1.obs )
+
+% Report purposes
+%addpath('../PlotUtils');
+%figure(1); printimage('../../../Report/figs/KF_fus_s1');
