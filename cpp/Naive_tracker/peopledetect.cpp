@@ -191,7 +191,7 @@ int main(int argc, char** argv)
         // (and more false alarms, respectively), decrease the hitThreshold and
         // groupThreshold (set groupThreshold to 0 to turn off the grouping completely).
         //hog.detectMultiScale(img, found, 0, Size(8,8), Size(32,32), 1.05, 2);
-		hog.detectMultiScale(img, found, 0.3, Size(8, 8), Size(32, 32), 1.05, 1.5, false);
+		hog.detectMultiScale(img, found, 0, Size(8, 8), Size(32, 32), 1.05, 1.5, false);
 
 
         t = (double)getTickCount() - t;
@@ -224,17 +224,17 @@ int main(int argc, char** argv)
 
 		match(found_filtered, state, frameNumber);
 		
-		//showinfo(state, frameNumber, fout);
+		showinfo(state, frameNumber, fout);
 
 		imshow("people detector", img);
 
-		if (frameNumber > 190)
-		{
-			showinfo(state, frameNumber, cout);
-			int c = waitKey(0) & 255;
-			if (c == 'q' || c == 'Q' || !f)
-				break;
-		}
+		//if (frameNumber > 160)
+		//{
+		//	showinfo(state, frameNumber, cout);
+		//	int c = waitKey(0) & 255;
+		//	if (c == 'q' || c == 'Q' || !f)
+		//		break;
+		//}
 
     }
     if(f)

@@ -100,11 +100,11 @@ dnt = dnt( :, ix_gt_zeros & ix_nt_zeros );
 mse_dnt = sqrt(sum(sum(dnt.^2)))
 
 dfilt = x([1 2],:) - xfilt([1 2],:);
-dfilt = dfilt( :, ix_gt_zeros  );
+dfilt = dfilt( :, ix_gt_zeros & ix_nt_zeros  );
 mse_filt = sqrt(sum(sum(dfilt.^2)))
 
 dsmooth = x([1 2],:) - xsmooth([1 2],:);
-dsmooth = dsmooth(:, ix_gt_zeros  );
+dsmooth = dsmooth(:, ix_gt_zeros & ix_nt_zeros  );
 mse_smooth = sqrt(sum(sum(dsmooth.^2)))
 
 
