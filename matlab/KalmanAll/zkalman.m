@@ -6,8 +6,8 @@ addpath(genpath('.'))
 %--------------------------------------------------------------------------
 vid_id = 1;
 
-seq = 'cor';
-%seq = 'front';
+%seq = 'cor';
+seq = 'front';
 
 %folder = '/gplane';
 folder = '';
@@ -109,12 +109,12 @@ mse_smooth = sqrt(sum(sum(dsmooth.^2)))
 
 
 figure(1)
-clf
-set(gca,'ydir','reverse')
+imshow('OneLeaveShop1front0178.jpg');
+%set(gca,'ydir','reverse')
 %subplot(2,1,1)
 hold on
-plot(x(1,ix_gt_zeros), x(2,ix_gt_zeros), 'ks-');
-plot(y(1,ix_nt_zeros), y(2,ix_nt_zeros), 'g*');
+plot(x(1,ix_gt_zeros), x(2,ix_gt_zeros), 'gs-');
+plot(y(1,ix_nt_zeros), y(2,ix_nt_zeros), 'b*');
 
 %plot(xfilt(1,1:400), xfilt(2,1:400), 'rx:');
 plot(xfilt(1,:), xfilt(2,:), 'rx:');
@@ -126,31 +126,27 @@ legend('true', 'observed', 'filtered', 3)
 xlabel('x')
 ylabel('y')
 
-
-
 % 3x3 inches
 set(gcf,'units','inches');
 set(gcf,'PaperPosition',[0 0 3 3])  
 %print(gcf,'-depsc','/home/eecs/murphyk/public_html/Bayes/Figures/aima_filtered.eps');
 %print(gcf,'-djpeg','-r100', '/home/eecs/murphyk/public_html/Bayes/Figures/aima_filtered.jpg');
 
-
-figure(2)
-clf
-set(gca,'ydir','reverse')
-%subplot(2,1,2)
-hold on
-plot(x(1,ix_gt_zeros), x(2,ix_gt_zeros), 'ks-');
-plot(y(1,ix_nt_zeros), y(2,ix_nt_zeros), 'g*');
-plot(xsmooth(1,:), xsmooth(2,:), 'rx:');
-% for t=1:T
-%     plotgauss2d(xsmooth(1:2,t), Vsmooth(1:2, 1:2, t)); 
-% end
-hold off
-legend('true', 'observed', 'smoothed', 3)
-xlabel('x')
-ylabel('y')
-
+% figure(2)
+% imshow('OneLeaveShop1cor0100.jpg');
+% %set(gca,'ydir','reverse')
+% %subplot(2,1,2)
+% hold on
+% plot(x(1,ix_gt_zeros), x(2,ix_gt_zeros), 'ks-');
+% plot(y(1,ix_nt_zeros), y(2,ix_nt_zeros), 'g*');
+% plot(xsmooth(1,:), xsmooth(2,:), 'rx:');
+% % for t=1:T
+% %     plotgauss2d(xsmooth(1:2,t), Vsmooth(1:2, 1:2, t)); 
+% % end
+% hold off
+% legend('true', 'observed', 'smoothed', 3)
+% xlabel('x')
+% ylabel('y')
 
 % 3x3 inches
 set(gcf,'units','inches');

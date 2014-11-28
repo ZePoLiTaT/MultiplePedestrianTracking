@@ -8,7 +8,7 @@ function [ ] = plot_kalman_filter( gt_pos, nt_pos, xsmooth, gp_img )
     %set(gca,'ydir','reverse')
     %subplot(2,1,2)
     hold on
-    plot(gt_pos(1,:), gt_pos(2,:), 'ys-');
+    plot(gt_pos(1,:), gt_pos(2,:), 'gs-');
     plot(nt_pos(1,:), nt_pos(2,:), 'b*');
     plot(xsmooth(1,:), xsmooth(2,:), 'rx:');
     % for t=1:T
