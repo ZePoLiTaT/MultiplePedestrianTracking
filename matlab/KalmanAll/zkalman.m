@@ -113,8 +113,8 @@ clf
 set(gca,'ydir','reverse')
 %subplot(2,1,1)
 hold on
-plot(x(1,:), x(2,:), 'ks-');
-plot(y(1,:), y(2,:), 'g*');
+plot(x(1,ix_gt_zeros), x(2,ix_gt_zeros), 'ks-');
+plot(y(1,ix_nt_zeros), y(2,ix_nt_zeros), 'g*');
 
 %plot(xfilt(1,1:400), xfilt(2,1:400), 'rx:');
 plot(xfilt(1,:), xfilt(2,:), 'rx:');
@@ -140,8 +140,8 @@ clf
 set(gca,'ydir','reverse')
 %subplot(2,1,2)
 hold on
-plot(x(1,:), x(2,:), 'ks-');
-plot(y(1,:), y(2,:), 'g*');
+plot(x(1,ix_gt_zeros), x(2,ix_gt_zeros), 'ks-');
+plot(y(1,ix_nt_zeros), y(2,ix_nt_zeros), 'g*');
 plot(xsmooth(1,:), xsmooth(2,:), 'rx:');
 % for t=1:T
 %     plotgauss2d(xsmooth(1:2,t), Vsmooth(1:2, 1:2, t)); 
