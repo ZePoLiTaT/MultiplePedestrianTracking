@@ -6,8 +6,8 @@ addpath(genpath('.'))
 %--------------------------------------------------------------------------
 vid_id = 1;
 
-%seq = 'cor';
-seq = 'front';
+seq = 'cor';
+%seq = 'front';
 
 %folder = '/gplane';
 folder = '';
@@ -18,6 +18,10 @@ folder = '';
 
 %gt_id = 1; nt_id = 2;      % cor2: Person 1
 %gt_id = 5; nt_id = 11;     % cor2: Person 2
+
+%img_file = sprintf('../../data%s/OneLeaveShop%d%s0000.jpg',folder,vid_id,seq);
+%img_file = 'OneLeaveShop1front0178.jpg';
+img_file = 'OneLeaveShop1cor0100.jpg';
 
 % ----> 1. Naive tracker detections
 nt_cor_file = sprintf('../../data%s/OneLeaveShop%d%s_NTracks.txt',folder,vid_id,seq);
@@ -76,7 +80,7 @@ R = 1*eye(os);
 
 % Remove observations before the first detection
 % and remove observations THRS_F frames after the last detection
-THRS_F = 5;
+THRS_F = 0;
 y = y( :, first_det_frame:last_det_frame+THRS_F );
 x = x( :, first_det_frame:last_det_frame+THRS_F );
 
@@ -97,23 +101,23 @@ ix_nt_zeros = all(y~=(-1));
 
 dnt = x([1 2],:) - y([1 2],:);
 dnt = dnt( :, ix_gt_zeros & ix_nt_zeros );
-mse_dnt = sqrt(sum(sum(dnt.^2)))
+mse_dnt = sqrt(sum(sum(dnt.^2))) / size(dnt,2)
 
 dfilt = x([1 2],:) - xfilt([1 2],:);
-dfilt = dfilt( :, ix_gt_zeros & ix_nt_zeros  );
-mse_filt = sqrt(sum(sum(dfilt.^2)))
+dfilt = dfilt( :, ix_gt_zeros   );
+mse_filt = sqrt(sum(sum(dfilt.^2))) / size(dfilt,2)
 
 dsmooth = x([1 2],:) - xsmooth([1 2],:);
-dsmooth = dsmooth(:, ix_gt_zeros & ix_nt_zeros  );
-mse_smooth = sqrt(sum(sum(dsmooth.^2)))
+dsmooth = dsmooth(:, ix_gt_zeros   );
+mse_smooth = sqrt(sum(sum(dsmooth.^2))) / size(dsmooth,2)
 
 
 figure(1)
-imshow('OneLeaveShop1front0178.jpg');
+imshow(img_file);
 %set(gca,'ydir','reverse')
 %subplot(2,1,1)
 hold on
-plot(x(1,ix_gt_zeros), x(2,ix_gt_zeros), 'gs-');
+plot(x(1,:), x(2,:), 'gs-');
 plot(y(1,ix_nt_zeros), y(2,ix_nt_zeros), 'b*');
 
 %plot(xfilt(1,1:400), xfilt(2,1:400), 'rx:');
@@ -123,8 +127,8 @@ plot(xfilt(1,:), xfilt(2,:), 'rx:');
 % end
 hold off
 legend('true', 'observed', 'filtered', 3)
-xlabel('x')
-ylabel('y')
+% xlabel('x')
+% ylabel('y')
 
 % 3x3 inches
 set(gcf,'units','inches');
@@ -149,7 +153,7 @@ set(gcf,'PaperPosition',[0 0 3 3])
 % ylabel('y')
 
 % 3x3 inches
-set(gcf,'units','inches');
-set(gcf,'PaperPosition',[0 0 3 3])  
+% set(gcf,'units','inches');
+% set(gcf,'PaperPosition',[0 0 3 3])  
 %print(gcf,'-djpeg','-r100', '/home/eecs/murphyk/public_html/Bayes/Figures/aima_smoothed.jpg');
 %print(gcf,'-depsc','/home/eecs/murphyk/public_html/Bayes/Figures/aima_smoothed.eps');
