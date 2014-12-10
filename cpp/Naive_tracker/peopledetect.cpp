@@ -54,6 +54,12 @@ void showinfo(vector<TrackState> &state, unsigned int frameNumber, ostream &out)
 				<< "," << detectionCenter.x
 				<< "," << detectionCenter.y
 				<< endl;
+
+			//Point topleft = Point(state[i].track.x, state[i].track.y);
+			//Point2f feet = Point2f(detectionCenter.x, detectionCenter.y + state[i].track.height/2);
+			//circle(img, topleft, 3, cv::Scalar(0, 0, 0), -2);
+			//circle(img, feet, 3, cv::Scalar(0, 0, 255), -2);
+			//circle(img, detectionCenter, 3, cv::Scalar(255, 0, 0), -2);
 		}
 		/*else
 		{
@@ -182,7 +188,7 @@ int main(int argc, char** argv)
         //printf("%s:\n", filename);
         if(!img.data)
             continue;
-		resize(img, img, Size(), 1.1, 1.1, INTER_LINEAR);
+		//resize(img, img, Size(), 1.1, 1.1, INTER_LINEAR);
 
         fflush(stdout);
         vector<Rect> found, found_filtered;
@@ -190,23 +196,27 @@ int main(int argc, char** argv)
         // run the detector with default parameters. to get a higher hit-rate
         // (and more false alarms, respectively), decrease the hitThreshold and
         // groupThreshold (set groupThreshold to 0 to turn off the grouping completely).
-        //hog.detectMultiScale(img, found, 0, Size(8,8), Size(32,32), 1.05, 2);
-		hog.detectMultiScale(img, found, 0, Size(8, 8), Size(32, 32), 1.05, 1.5, false);
+        hog.detectMultiScale(img, found, 0, Size(8,8), Size(32,32), 1.05, 2);
+		//hog.detectMultiScale(img, found, 0, Size(8, 8), Size(32, 32), 1.05, 1.5, false);
 
 
         t = (double)getTickCount() - t;
         //printf("tdetection time = %gms\n", t*1000./cv::getTickFrequency());
         size_t i, j;
-        for( i = 0; i < found.size(); i++ )
-        {
-            Rect r = found[i];
-            for( j = 0; j < found.size(); j++ )
-                if( j != i && (r & found[j]) == r)
-                    break;
-            if( j == found.size() )
-                found_filtered.push_back(r);
-        }
+		for (i = 0; i < found.size(); i++)
+		{
+			Rect r = found[i];
+			for (j = 0; j < found.size(); j++)
+			if (j != i && (r & found[j]) == r)
+				break;
+			if (j == found.size())
+			{
+				found_filtered.push_back(r);
+				rectangle(img, r.tl(), r.br(), cv::Scalar(0, 255, 255), 2);
+			}
+		}
 
+		
 
         for( i = 0; i < found_filtered.size(); i++ )
         {
@@ -218,7 +228,9 @@ int main(int argc, char** argv)
             r.y += cvRound(r.height*0.07);
             r.height = cvRound(r.height*0.8);
 
-            rectangle(img, r.tl(), r.br(), cv::Scalar(0,255,0), 3);
+			found_filtered[i] = r;
+
+            rectangle(img, r.tl(), r.br(), cv::Scalar(0,255,0), 2);
 
         }
 
@@ -226,15 +238,21 @@ int main(int argc, char** argv)
 		
 		showinfo(state, frameNumber, fout);
 
+		/*Rect gt;
+		gt.x = 162.5; gt.y = 66; gt.width = 37; gt.height = 88;
+		rectangle(img, gt.tl(), gt.br(), cv::Scalar(0, 255, 255), 2);*/
 		imshow("people detector", img);
 
-		//if (frameNumber > 160)
-		//{
-		//	showinfo(state, frameNumber, cout);
-		//	int c = waitKey(0) & 255;
-		//	if (c == 'q' || c == 'Q' || !f)
-		//		break;
-		//}
+		/*if (frameNumber >= 186)
+		{
+		showinfo(state, frameNumber, cout, img);
+
+		imshow("people detector", img);
+		int c = waitKey(0) & 255;
+		if (c == 'q' || c == 'Q' || !f)
+		break;
+		}*/
+
 
     }
     if(f)
