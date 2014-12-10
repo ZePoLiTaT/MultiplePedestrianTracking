@@ -2,20 +2,38 @@
 %lab exercise for b31xn
 %calum blair 29/1/12
 
-close all
-%get tracks
-try
-    % --------------------------------------------------------
-    % OneLeaveShop1
-    % --------------------------------------------------------
-	load tracks_cor_fro_wh;
-    % --------------------------------------------------------
-    % OneLeaveShop2
-    % --------------------------------------------------------
-    %load tracks2_cor_fro;
-catch
-	caviar_data_extraction;
-end
+%close all
+
+folder = 'NTOneLeaveShop1';
+folder = sprintf('../../data/%s/',folder);
+
+% Ground Truth and NTracks file names
+gt_fro_file = strcat( folder, 'tracks_cor_fro.mat' );
+nt_path = strcat( folder, 'NTracks_front.txt' );
+
+% Ground Truth and NTracks transformed to the Ground Plane file names
+GP_gt_fro_file = strcat(folder, 'GP_tracks_front.mat' );
+GP_nt_fro_file = strcat(folder, 'GP_NTracks_front.txt' );
+
+load(gt_fro_file);
+
+%--------------------------------------------------------------------------
+% Person id correspondence
+%--------------------------------------------------------------------------
+id_nt = 2; id_gt = 2;
+
+% try
+%     % --------------------------------------------------------
+%     % OneLeaveShop1
+%     % --------------------------------------------------------
+% 	load tracks_cor_fro_wh;
+%     % --------------------------------------------------------
+%     % OneLeaveShop2
+%     % --------------------------------------------------------
+%     %load tracks2_cor_fro;
+% catch
+% 	caviar_data_extraction;
+% end
 [s1 s2 s3] = size(tracks_cor);
 if s3<4
 	warning('need to extract width & height from XML or point transforms wont work');
@@ -72,138 +90,47 @@ c2b = cp2tform(regpoints(1:4,1:2),regpoints(1:4,3:4),'projective');
 f2b = cp2tform(regpoints(5:8,1:2),regpoints(5:8,3:4),'projective');
 save('caviar_homography.mat','c2b','f2b');
 
-%% check transform by transforming images onto base plane
-
-%if we transform the original images, bits of them will fall outside our
-%base plane. When this happens, MATLAB shrinks the output image to an
-%unreadable mess. So we only work on the parts of the image we know are on
-%the ground plane
-%define these rectangles
-%these could poss be improved but watch for the assertion below
-% rF = [50 95 300 115];
-% rC = [50 60 240 205];
-% t=105;
-% imgC = vc.read(t);
-% imgF = vf.read(t+td);
-% %plot rectangles
-% iC=1; iF=2; iB=3;
-% figure(iC),imshow(imgC); drawnow
-% hold on; rectangle('Position',rC,'EdgeColor','red');
-% figure(iF),imshow(imgF); drawnow
-% hold on; rectangle('Position',rF,'EdgeColor','red');
-% 
-% %crop the images
-% patchF = imcrop(imgF,rF);
-% patchC = imcrop(imgC,rC);
-% 
-% %transform them - extra options needed here. dont use whole images either
-% [fBase fbx fby] = imtransform(patchF,f2b,'XYScale',1,'UData',[rF(1) rF(1)+rF(3)],'VData',[rF(2) rF(2)+rF(4)]);
-% [cBase cbx cby] = imtransform(patchC,c2b,'XYScale',1,'UData',[rC(1) rC(1)+rC(3)],'VData',[rC(2) rC(2)+rC(4)]);
-% assert(cbx(1)>0); assert(cby(1)>0);
-% cbx=ceil(cbx); cby=ceil(cby);
-% assert(fbx(1)>0); assert(fby(1)>0);
-% fbx=ceil(fbx); fby=ceil(fby);
-% 
-% %[fbx fby] tells us where images go on base plane
-% base = zeros(yb,xb,3);
-% base(cby(1):cby(2),cbx(1):cbx(2),:) = im2double(cBase(1:cby(2)-cby(1)+1,1:cbx(2)-cbx(1)+1,:));
-% %front overwrites corridor...
-% base(fby(1):fby(2),fbx(1):fbx(2),:) = im2double(fBase(1:fby(2)-fby(1)+1,1:fbx(2)-fbx(1)+1,:));
-% figure(iB),imshow(base)
-	
-% %% check transform of GT points too
-% 
-% %
-% [~,peopleC,~] = size(tracks_cor(t,:,1:2));
-% [~,peopleF,~] = size(tracks_fro(t+td,:,1:2));
-% 
-% %get points for a specfic frame
-% gtC = squeeze(tracks_cor(t,:,1:2));
-% gtF = squeeze(tracks_fro(t+td,:,1:2));
-% 
-% if peopleC == 1
-%     gtC = gtC';
-% end
-% 
-% if peopleF == 1
-%     gtF = gtF';
-% end
-%     
-% x=1;y=2;
-% %transform them to base plane
-% baseGTC = tformfwd(c2b,gtC(:,x),gtC(:,y));
-% baseGTF = tformfwd(f2b,gtF(:,x),gtF(:,y));
-% %plot
-% figure(iB),hold on;
-% plot(baseGTC(:,x),baseGTC(:,y),'bo')
-% plot(baseGTF(:,x),baseGTF(:,y),'go')
-% %% match a specific person id and plot with dot
-% 
-% % --------------------------------------------------------
-% % OneLeaveShop2
-% % --------------------------------------------------------
-% %idF=1; idC = 2;
-% 
-% % --------------------------------------------------------
-% % OneLeaveShop1
-% % --------------------------------------------------------
-% idF=2; idC = 6;
-% 
-% plot(baseGTF(idF,x),baseGTF(idF,y),'g.')
-% plot(baseGTC(idC,x),baseGTC(idC,y),'b.')
-% %% hmm. points transform ok but don't match up. try again using the feet
-% %or bottom of bbox,anyway
-% w=3;h=4;
-% gtCfeet = squeeze(tracks_cor(t,:,:));
-% gtFfeet = squeeze(tracks_fro(t+td,:,:));
-% 
-% if peopleC == 1
-%     gtCfeet = gtCfeet';
-% end
-% 
-% if peopleF == 1
-%     gtFfeet = gtFfeet';
-% end
-% 
-% gtCfeet(:,y) = ceil(gtCfeet(:,y) + gtCfeet(:,h)/2);
-% gtFfeet(:,y) = ceil(gtFfeet(:,y) + gtFfeet(:,h)/2);
-% 
-% %transform and plot
-% baseGTCfeet = tformfwd(c2b,gtCfeet(:,x),gtCfeet(:,y));
-% baseGTFfeet = tformfwd(f2b,gtFfeet(:,x),gtFfeet(:,y));
-% plot(baseGTCfeet(:,x),baseGTCfeet(:,y),'yo')
-% plot(baseGTFfeet(:,x),baseGTFfeet(:,y),'ro')
-% %% can we find the same person?
-% plot(baseGTCfeet(idC,x),baseGTCfeet(idC,y),'y*')
-% plot(baseGTFfeet(idF,x),baseGTFfeet(idF,y),'r*')
-% 
-% %% transfer GTs from one image to the other
-% figure(iC),hold on;
-% plot(gtCfeet(:,x),gtCfeet(:,y),'bo')
-% %now transform front points from base to corridor
-% CfromFfeet = tforminv(c2b,baseGTFfeet(:,x),baseGTFfeet(:,y));
-% plot(CfromFfeet(:,x),CfromFfeet(:,y),'r*')
-% %and the other way
-% figure(iF),hold on;
-% plot(gtFfeet(:,x),gtFfeet(:,y),'yo')
-% %% now transform corridor  points from base to front
-% FfromCfeet = tforminv(f2b,baseGTCfeet(:,x),baseGTCfeet(:,y));
-% plot(FfromCfeet(:,x),FfromCfeet(:,y),'r*')
-
 %--------------------------------------------------------------------------
 % CONVERT TO GROUND PLANE
 %--------------------------------------------------------------------------
-nt_path = 'OneLeaveShop1front_NTracks.txt';
-gt = tracks_fro;
+gt_ori = tracks_fro;
 T = f2b;
 
-% save the naive tracker projections on ground plane
-[ nt_gp, tracks_fro, nt ] = save_gp_proj( nt_path, gt, T, 'OneLeaveShop1/OneLeaveShop1front_NTracks.txt');
+% extract the naive tracker data in matlab format
+[ nt_frames, nt_ppl, nt_ori ] = read_data( nt_path );
+nt_center = nt_ori;
+gt_center = gt_ori;
 
 %--------------------------------------------------------------------------
-% TEST ON A PERSON
+% GET THE POINT OF THE FEET INSTEAD OF THE CENTER
 %--------------------------------------------------------------------------
-id_nt = 2; id_gt = 2;
+%--------------------------------------------------------------------------
+% GET THE POINT OF THE FEET INSTEAD OF THE CENTER
+%--------------------------------------------------------------------------
+x=1;y=2;w=3;h=4; % columns in the ground truth
+% GT: get the average only in the bottom of the rectangle
+gt_feet = gt_ori;
+gt_feet(:,:,y) = ceil(gt_ori(:,:,y) + gt_ori(:,:,h)/2);
+
+% NT: set the last 2 columns as the x (col3) y center (col 8)
+x=7;y=8;w=5;h=6; % columns in the ground truth
+nt_feet = nt_ori;
+nt_feet(:,y) = ceil(nt_ori(:,y) + nt_ori(:,h)/2);
+
+% use center
+% gt = gt_center;
+% nt = nt_center;
+
+% use the feet
+gt = gt_feet;
+nt = nt_feet;
+
+%--------------------------------------------------------------------------
+% PROJECT ONTO THE GROUND PLANE
+%--------------------------------------------------------------------------
+
+% save the naive tracker projections on ground plane
+[ nt_gp, tracks_fro, nt ] = save_gp_projection( nt, gt, T, GP_nt_fro_file);
 
 % naiver tracker projection of test person
 idx_pt = nt(:,2) == id_nt;
@@ -216,7 +143,7 @@ pt_gt_gp = tracks_fro(:,id_gt,1:2);
 %--------------------------------------------------------------------------
 % PLOT FRONT, CORRIDOR AND GROUND PLANE
 %--------------------------------------------------------------------------
-t=pt(1,1);
+t=105; %pt(1,1);
 rF = [50 95 300 115];
 rC = [50 60 240 205];
 imgC = vc.read(t);
@@ -266,4 +193,6 @@ plot(pt_gt_gp(:,:,1),pt_gt_gp(:,:,2),'g.')
 figure(iF),hold on;
 plot(gt(:,id_gt,1),gt(:,id_gt,2),'y.')
 
-save('OneLeaveShop1/tracks_fro.mat','tracks_fro');
+save(GP_gt_fro_file,'tracks_fro');
+imwrite(base,strcat(folder,'gp.png'));
+
