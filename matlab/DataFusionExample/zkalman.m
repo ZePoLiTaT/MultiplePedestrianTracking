@@ -1,14 +1,18 @@
-clc; clear; close all;
+clc; clear; 
+%close all;
 %addpath(genpath('.'))
 
 %--------------------------------------------------------------------------
 %   TEST SELECTION
 %--------------------------------------------------------------------------
-folder = '/GPlaneOneLeaveShop1';
+%folder = '/GPlaneOneLeaveShop1_feet';
 %folder = '';
 
+folder = 'NTOneLeaveShop1';
+folder = sprintf('../../data/%s/',folder);
+
 % ground plane image
-gp_img_file = sprintf('../../data%s/gp.png',folder);
+gp_img_file = strcat(folder, 'gp.png');
 gp_img = imread(gp_img_file);
 
 % Id's correspondences
@@ -19,13 +23,14 @@ gt_id_fro = 2; nt_id_fro = 2;      % fro1: Person 1
 %gt_id = 5; nt_id = 11;     % cor2: Person 2
 
 % ----> 1. Naive tracker detections
-nt_cor_file = sprintf('../../data%s/NTracks_cor.txt',folder);
-nt_fro_file = sprintf('../../data%s/NTracks_fro.txt',folder);
+nt_cor_file = strcat(folder, 'GP_NTracks_cor.txt');
+nt_fro_file = strcat(folder, 'GP_NTracks_front.txt');
 
 % ----> 2. Ground truth
-gt_cor_file = sprintf('../../data%s/tracks_cor.mat',folder);
+gt_cor_file = strcat(folder, 'GP_tracks_cor.mat');
+gt_fro_file = strcat(folder, 'GP_tracks_front.mat');
+
 load(gt_cor_file);
-gt_fro_file = sprintf('../../data%s/tracks_fro.mat',folder);
 load(gt_fro_file);
 
 ss = 4; % state size
@@ -170,14 +175,14 @@ for t=INIT:END
 end
 
 % Plot the results
-figure(1); plot_kalman_filter( sensor1.gt, sensor1.obs, sensor1.predictions, gp_img )
-figure(2); plot_kalman_filter( sensor2.gt, sensor2.obs, sensor2.predictions, gp_img )
+figure(40); plot_kalman_filter( sensor1.gt, sensor1.obs, sensor1.predictions, gp_img )
+figure(41); plot_kalman_filter( sensor2.gt, sensor2.obs, sensor2.predictions, gp_img )
 
 % Concatenate gt and observations
 fused.gt = [sensor1.gt,sensor2.gt];
 fused.obs = [sensor1.obs,sensor2.obs];
 
-figure(3); plot_kalman_filter( fused.gt, fused.obs, winnerTakesAll, gp_img )
+figure(42); plot_kalman_filter( fused.gt, fused.obs, winnerTakesAll, gp_img )
 
 % Calculate the MSE
 %[ mse_dnt_cor, mse_filt_cor ] = calculate_mse( sensor1.predictions, sensor1.gt, sensor1.obs )
