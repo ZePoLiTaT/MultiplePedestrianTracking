@@ -12,7 +12,7 @@ function [ ] = process_sequenc( nt_cor_file, gt_tracks, gt_corimg_file )
     naive_tracker(:,7) = naive_tracker(:,3) + naive_tracker(:,5)/2;
     naive_tracker(:,8) = naive_tracker(:,4) + naive_tracker(:,6)/2;
 
-    cmap = jet(nt_ppl);
+    cmap = rand(nt_ppl, 3); %jet(nt_ppl);
     figure, imshow(imread(gt_corimg_file));
     for i=0:nt_ppl-1
         track_ix = find(naive_tracker(:,2)==i);

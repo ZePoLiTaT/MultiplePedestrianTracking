@@ -5,24 +5,38 @@ vid_id = 1;
 %-----------------------------------------------------------------
 % FILE NAMES
 %-----------------------------------------------------------------
+folder = 'NTOneLeaveShop1';
+folder = sprintf('../../data/%s/',folder);
 
-% ----> 0. Ground Truth for all
-gt_cor_file = sprintf('../../data/tracks%d_cor_fro.mat',vid_id);
+% Images
+gt_corimg_file = strcat( folder, 'cor.jpg' );
+gt_froimg_file = strcat( folder, 'front.jpg' );
 
-% ----> 1. Corridor
-% Image
-gt_corimg_file = sprintf('../../data/OneLeaveShop%dcor0000.jpg',vid_id);
-
-% Naive Tracker
-nt_cor_file = sprintf('../../data/OneLeaveShop%dcor_NTracks.txt',vid_id);
-% nt_cor_file = sprintf('../../data/shop%d_zntmod_cor_out.txt',vid_id);
-
-% ----> 2. Front
-% Image
-gt_froimg_file = sprintf('../../data/OneLeaveShop%dfront0000.jpg',vid_id);
+% Ground Truth for all
+gt_cor_file = strcat( folder, 'tracks_cor_fro.mat' );
 
 % Naive Tracker
-nt_fro_file = sprintf('../../data/OneLeaveShop%dfront_NTracks.txt',vid_id);
+nt_cor_file = strcat( folder, 'NTracks_cor.txt' );
+nt_fro_file = strcat( folder, 'NTracks_fro.txt' );
+
+
+% % ----> 0. Ground Truth for all
+% gt_cor_file = sprintf('../../data/tracks%d_cor_fro.mat',vid_id);
+% 
+% % ----> 1. Corridor
+% % Image
+% gt_corimg_file = sprintf('../../data/OneLeaveShop%dcor0000.jpg',vid_id);
+% 
+% % Naive Tracker
+% nt_cor_file = sprintf('../../data/OneLeaveShop%dcor_NTracks.txt',vid_id);
+% % nt_cor_file = sprintf('../../data/shop%d_zntmod_cor_out.txt',vid_id);
+% 
+% % ----> 2. Front
+% % Image
+% gt_froimg_file = sprintf('../../data/OneLeaveShop%dfront0000.jpg',vid_id);
+% 
+% % Naive Tracker
+% nt_fro_file = sprintf('../../data/OneLeaveShop%dfront_NTracks.txt',vid_id);
 
 %-----------------------------------------------------------------
 % PROCESS
