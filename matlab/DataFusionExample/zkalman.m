@@ -93,12 +93,21 @@ prob2 = 0;
 %% Initialise other variables up front for efficiency
 sensor1.predictions = zeros(2,N_OBSV);
 sensor2.predictions = zeros(2,N_OBSV);
+
+% Fusioon strategy variables
 marginalsWTA = zeros(2,N_OBSV);
 marginalsWS = zeros(2,N_OBSV);
 marginalsSP = zeros(2,N_OBSV);
 winnerTakesAll = zeros(2,N_OBSV);
 weightedSum = zeros(1,N_OBSV);
 product = zeros(1,N_OBSV);
+
+% Tunable parameters
+sensor1Weight = 0.5;
+sensor2Weight = 1-sensor1Weight;
+
+usePriors = 0;
+
 
 for t=INIT:END
     
@@ -141,12 +150,21 @@ for t=INIT:END
     % ---------------------------------------------------------------------
     % Fusion
     % ---------------------------------------------------------------------
-     if t == 1
+     if t < first_det_frame_fro 
+        prior1 = 0;
+     elseif t == first_det_frame_fro 
         % First observation we have no prior, so use 0.5 for each sensor
         prior1 = 0.5;
+     elseif t > first_det_frame_cor
+        prior1 = marginalsWTA(1,t-1);
+     end
+     
+     if t < first_det_frame_cor 
+        prior2 = 0;     
+     elseif t == first_det_frame_cor
+        % First observation we have no prior, so use 0.5 for each sensor
         prior2 = 0.5;
      else
-        prior1 = marginalsWTA(1,t-1);
         prior2 = marginalsWTA(2,t-1);
      end
     
@@ -172,6 +190,38 @@ for t=INIT:END
         winnerTakesAll(:,t) = pred2(1:2);
     end
     
+    
+    %% Option 2: Use the 'Weighted Sum' strategy.
+    %
+    % weight each posterior and then normalise the result to give us
+    % a final weighting.
+    
+    if t == 1
+        % First observation we have no prior, so use 0.5 for each sensor
+        prior1 = 0.5;
+        prior2 = 0.5;
+    else
+        prior1 = marginalsWS(1,t-1);
+        prior2 = marginalsWS(2,t-1);
+    end
+    
+   if ~usePriors
+       prior1 = 1;
+       prior2 = 1;
+   end
+    
+    % Calculate our marginals
+    px1 = sensor1Weight*prior1*prob1;
+    px2 = sensor2Weight*prior2*prob2;
+    px1Norm = px1/(px1+px2);
+    px2Norm = px2/(px1+px2);
+    
+    % Store them for t+1
+    marginalsWS(1,t) = px1Norm;
+    marginalsWS(2,t) = px2Norm;
+    
+    % Calculate the final 'prediction' based on our weights
+    weightedSum(t) = (px1Norm*pred1(1))+(px2Norm*pred2(1));  
 end
 
 % Plot the results
@@ -183,6 +233,8 @@ fused.gt = [sensor1.gt,sensor2.gt];
 fused.obs = [sensor1.obs,sensor2.obs];
 
 figure(42); plot_kalman_filter( fused.gt, fused.obs, winnerTakesAll, gp_img )
+
+figure(43); plot_kalman_filter( fused.gt, fused.obs, weightedSum, gp_img )
 
 % Calculate the MSE
 %[ mse_dnt_cor, mse_filt_cor ] = calculate_mse( sensor1.predictions, sensor1.gt, sensor1.obs )
