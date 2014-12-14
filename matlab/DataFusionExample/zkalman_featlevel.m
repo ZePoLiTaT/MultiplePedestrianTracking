@@ -64,8 +64,7 @@ sensor2.obs = nt_pos_cor;
 
 sensor1.gt = gt_pos_fro(:,td+1:end);
 sensor1.gt = [sensor1.gt, ones(4,td)*-1];
-sensor1.gt = sensor1.gt(1:2, :);
-sensor2.gt = gt_pos_cor(1:2, :);
+sensor2.gt = gt_pos_cor;
 
 %% Determine the number of iterations
 % ajustar frame de acuerdo a temporal difference entre corridor y front
@@ -75,16 +74,11 @@ last_det_frame_fro = last_det_frame_fro-td;
 % tomar primera deteccion como posicion inicial
 pred1 = [sensor1.obs(:,first_det_frame_fro); 0; 0]; % prior for tracker 1
 pred2 = [sensor2.obs(:,first_det_frame_cor); 0; 0]; % prior for tracker 2
-
 if (first_det_frame_fro < first_det_frame_cor)
-    prediction = pred1
+    prediction = [sensor1.obs(:,first_det_frame_fro); 0; 0];
 else
-    prediction = pred2
+    prediction = [sensor2.obs(:,first_det_frame_cor); 0; 0];
 end
-
-% y removerla de las observaciones
-sensor1.obs(:,first_det_frame_fro) = [-1; -1];
-sensor2.obs(:,first_det_frame_cor) = [-1; -1];
 
 % empezar observaciones en tiempo 2 porque la primera es la pos. inicial
 first_det_frame_fro = first_det_frame_fro + 1;
@@ -99,20 +93,19 @@ os = 2; % observation size
 F = [1 0 1 0; 0 1 0 1; 0 0 1 0; 0 0 0 1];  % Transition model
 P1 = eye(ss)*0.1; % Posterior error covariance for tracker 1
 P2 = eye(ss)*0.1; % Posterior error covariance for tracker 2
-P = eye(ss)*0.1; % Posterior error covariance for fused tracker
 Q = 0.1*eye(ss); % Process noise covariance (single target so the same for both trackers)
 H = [1 0 0 0; 0 1 0 0]; % Observation model
 R = 1*eye(os); % Measurement (observation) covariance
 
 % Initialise other variables up front for efficiency
-sensor1.predictions = zeros( size(sensor1.gt) );
-sensor2.predictions = zeros( size(sensor2.gt) );
+sensor1.predictions = zeros(2,N_OBSV);
+sensor2.predictions = zeros(2,N_OBSV);
 
 %% Fusioon strategy variables
-fused.predictions = zeros( size(sensor1.gt) );
-fused.gt = [sensor1.gt;sensor2.gt];
-fused.obs = [sensor1.obs;sensor2.obs];
+% Feature level
+sensorfused.predictions = zeros(2,N_OBSV);
 
+% Classifier output level
 prob1 = 0;
 prob2 = 0;
 
@@ -134,6 +127,17 @@ prior1 = 0;
 prior2 = 0;
 
 for t=INIT:END
+    
+    
+    prediction = kalman_predict(F, prediction);
+    observation_list = [ sensor1.obs(:,t), sensor2.obs(:,t) ];
+    observation = select_feature( prediction(1:2), observation_list );
+    
+    if all(observation ~= -1 )
+        [ prediction, P, prob] = kalman_update(sensor1.obs(:,t), H, pred1, Q, R, F, P1);
+    end
+    
+    sensorfused.predictions(:,t) = prediction(1:2);
     
     % ---------------------------------------------------------------------
     % Prediccion KALMAN Sensor 1
@@ -175,126 +179,22 @@ for t=INIT:END
     % Fusion Strategies
     % ---------------------------------------------------------------------
     
-    % ---------------------------------------------------------------------
-    %% Option 0: Feature Level
-    % ---------------------------------------------------------------------
-    prediction = kalman_predict(F, prediction);
-    observation_list = [ sensor1.obs(:,t), sensor2.obs(:,t) ];
-    observation = select_feature( prediction(1:2), observation_list );
-    
-    if all(observation ~= -1 )
-        [ prediction, P, prob] = kalman_update(observation, H, prediction, Q, R, F, P);
-    end
-    
-    fused.predictions(:,t) = prediction(1:2);
-    
-    % ---------------------------------------------------------------------
-    %% Option 1: Use the 'Winner Takes All' strategy for choosing our resulting
-    % ---------------------------------------------------------------------
-    % prediction. 
-     if t < first_det_frame_fro 
-        % Before any measurment nullify the weigth for this sensor
-        prior1 = 0;
-     elseif t == first_det_frame_fro 
-        % First observation we have no prior, so use 0.5 for each sensor
-        prior1 = 0.5;
-     elseif t > first_det_frame_cor
-        prior1 = marginalsWTA(1,t-1);
-     end
-     
-     if t < first_det_frame_cor 
-        % Before any measurment nullify the weigth for this sensor
-        prior2 = 0;     
-     elseif t == first_det_frame_cor
-        % First observation we have no prior, so use 0.5 for each sensor
-        prior2 = 0.5;
-     else
-        prior2 = marginalsWTA(2,t-1);
-     end
-    
-    if ~usePriors
-        prior1 = 1;
-        prior2 = 1;
-    end
-    
-    % Calculate the posterior likelihood for each filter. 
-    posterior1 = prior1*prob1;
-    posterior2 = prior2*prob2;
-    
-    % These are our priors for t+1. We'll normalise them to prevent
-    % underflow
-    marginalsWTA(1,t) = posterior1/(posterior1+posterior2);
-    marginalsWTA(2,t) = posterior2/(posterior1+posterior2);
-    
-    if posterior1 > posterior2
-        winnerTakesAll(:,t) = pred1(1:2);        
-    else
-        winnerTakesAll(:,t) = pred2(1:2);
-    end
-    
-    % ---------------------------------------------------------------------
-    %% Option 2: Use the 'Weighted Sum' strategy.
-    % ---------------------------------------------------------------------
-    % weight each posterior and then normalise the result to give us
-    % a final weighting.
-    
-     if t < first_det_frame_fro 
-        % Before any measurment nullify the weigth for this sensor
-        prior1 = 0;
-     elseif t == first_det_frame_fro 
-        % First observation we have no prior, so use 0.5 for each sensor
-        prior1 = 0.5;
-     elseif t > first_det_frame_cor
-        prior1 = marginalsWS(1,t-1);
-     end
-     
-     if t < first_det_frame_cor 
-        % Before any measurment nullify the weigth for this sensor
-        prior2 = 0;     
-     elseif t == first_det_frame_cor
-        % First observation we have no prior, so use 0.5 for each sensor
-        prior2 = 0.5;
-     else
-        prior2 = marginalsWS(2,t-1);
-     end
-    
-    if ~usePriors
-        prior1 = 1;
-        prior2 = 1;
-    end
-     
-    % Calculate our marginals
-    px1 = sensor1Weight*prior1*prob1;
-    px2 = sensor2Weight*prior2*prob2;
-    px1Norm = px1/(px1+px2);
-    px2Norm = px2/(px1+px2);
-    
-    % Store them for t+1
-    marginalsWS(1,t) = px1Norm;
-    marginalsWS(2,t) = px2Norm;
-    
-    % Calculate the final 'prediction' based on our weights
-    weightedSum(:,t) = (px1Norm*pred1(1:2))+(px2Norm*pred2(1:2));  
 end
 
 % Plot the results
-[ mse_fro, mse_gt ] = calculate_mse( sensor1.predictions, sensor1.gt );
-figure(40); plot_kalman_filter( mse_gt, sensor1.obs, sensor1.predictions, gp_img );
+figure(40); plot_kalman_filter( sensor1.gt, sensor1.obs, sensor1.predictions, gp_img )
+figure(41); plot_kalman_filter( sensor2.gt, sensor2.obs, sensor2.predictions, gp_img )
 
-[ mse_cor, mse_gt ] = calculate_mse( sensor2.predictions, sensor2.gt );
-figure(41); plot_kalman_filter( mse_gt, sensor2.obs, sensor2.predictions, gp_img )
+% Concatenate gt and observations
+fused.gt = [sensor1.gt,sensor2.gt];
+fused.obs = [sensor1.obs,sensor2.obs];
 
+figure(42); plot_kalman_filter( fused.gt, fused.obs, winnerTakesAll, gp_img )
 
-[ mse_fus1, mse_gt ] = calculate_mse( fused.predictions, fused.gt );
-figure(42); plot_kalman_filter( mse_gt, fused.obs, fused.predictions, gp_img )
-%
-[ mse_fus2, mse_gt ] = calculate_mse( winnerTakesAll, fused.gt );
-figure(43); plot_kalman_filter( mse_gt, fused.obs, winnerTakesAll, gp_img )
+figure(43); plot_kalman_filter( fused.gt, fused.obs, weightedSum, gp_img )
 
-[ mse_fus3, mse_gt ] = calculate_mse( weightedSum, fused.gt );
-figure(44); plot_kalman_filter( mse_gt, fused.obs, weightedSum, gp_img )
-
-disp(sprintf('%.4f & %.4f & %.4f & %.4f \\\\', mse_fro, mse_cor, mse_fus1, mse_fus2, mse_fus3));
+% Calculate the MSE
+%[ mse_dnt_cor, mse_filt_cor ] = calculate_mse( sensor1.predictions, sensor1.gt, sensor1.obs )
 
 % Report purposes
 %addpath('../PlotUtils');
