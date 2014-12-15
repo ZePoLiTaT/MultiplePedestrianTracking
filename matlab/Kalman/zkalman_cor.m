@@ -4,19 +4,21 @@ clc; clear; close all;
 %--------------------------------------------------------------------------
 %   TEST SELECTION
 %--------------------------------------------------------------------------
-folder = '/OneLeaveShop1';
 %folder = '';
+%folder = '/OneLeaveShop1';
+
+% Template Matching Detector
+folder = '/NTOneLeaveShop1TM';
 
 % ground plane image
 gp_img_file = sprintf('../../data%s/OneLeaveShop1cor0100.jpg',folder);
 gp_img = imread(gp_img_file);
 
 % Id's correspondences
-gt_id_cor = 6; nt_id_cor = 2;      % cor1: Person 1
-gt_id_fro = 2; nt_id_fro = 2;      % fro1: Person 1
+%gt_id_cor = 6; nt_id_cor = 2;      % cor1: Person 1
 
-%gt_id = 1; nt_id = 2;      % cor2: Person 1
-%gt_id = 5; nt_id = 11;     % cor2: Person 2
+% Template Matching Detector
+gt_id_cor = 6; nt_id_cor = 2;      % cor1: Person 1
 
 % ----> 1. Naive tracker detections
 nt_cor_file = sprintf('../../data%s/NTracks_cor.txt',folder);

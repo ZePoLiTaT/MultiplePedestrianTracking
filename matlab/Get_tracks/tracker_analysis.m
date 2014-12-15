@@ -5,7 +5,8 @@ vid_id = 1;
 %-----------------------------------------------------------------
 % FILE NAMES
 %-----------------------------------------------------------------
-folder = 'NTOneLeaveShop1';
+%folder = 'NTOneLeaveShop1';
+folder = 'NTOneLeaveShop1TM';
 folder = sprintf('../../data/%s/',folder);
 
 % Images

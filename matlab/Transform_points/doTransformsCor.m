@@ -4,7 +4,8 @@
 
 %close all
 
-folder = 'NTOneLeaveShop1';
+%folder = 'NTOneLeaveShop1';
+folder = 'NTOneLeaveShop1TM';
 folder = sprintf('../../data/%s/',folder);
 
 % Ground Truth and NTracks file names
@@ -20,8 +21,11 @@ load(gt_cor_file);
 %--------------------------------------------------------------------------
 % Person id correspondence
 %--------------------------------------------------------------------------
-id_nt = 2; id_gt = 6;
-%id_nt = 8; id_gt = 6;
+% ID NTOneLeaveShop1
+%id_nt = 2; id_gt = 6;
+
+% ID NTOneLeaveShop1NT
+id_nt = 6; id_gt = 6;
 
 %get tracks
 % try
@@ -133,7 +137,7 @@ nt = nt_feet;
 [ nt_gp, tracks_cor, nt ] = save_gp_projection( nt, gt, T, GP_nt_cor_file);
    
 % naiver tracker projection of test person
-idx_pt = nt(:,id_nt) == id_nt;
+idx_pt = nt(:,2) == id_nt;
 pt = nt(idx_pt,:);
 pt_gp = nt_gp(idx_pt,:);
 

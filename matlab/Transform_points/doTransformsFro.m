@@ -4,7 +4,8 @@
 
 %close all
 
-folder = 'NTOneLeaveShop1';
+%folder = 'NTOneLeaveShop1';
+folder = 'NTOneLeaveShop1TM';
 folder = sprintf('../../data/%s/',folder);
 
 % Ground Truth and NTracks file names
@@ -20,7 +21,11 @@ load(gt_fro_file);
 %--------------------------------------------------------------------------
 % Person id correspondence
 %--------------------------------------------------------------------------
-id_nt = 2; id_gt = 2;
+% ID NTOneLeaveShop1
+%id_nt = 2; id_gt = 2;
+
+% ID NTOneLeaveShop1NT
+id_nt = 1; id_gt = 2;
 
 % try
 %     % --------------------------------------------------------
@@ -143,7 +148,8 @@ pt_gt_gp = tracks_fro(:,id_gt,1:2);
 %--------------------------------------------------------------------------
 % PLOT FRONT, CORRIDOR AND GROUND PLANE
 %--------------------------------------------------------------------------
-t=105; %pt(1,1);
+t=105; %
+%pt = pt(1,1);
 rF = [50 95 300 115];
 rC = [50 60 240 205];
 imgC = vc.read(t);

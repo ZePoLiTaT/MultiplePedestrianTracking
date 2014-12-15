@@ -8,16 +8,26 @@ clc; clear;
 %folder = '/GPlaneOneLeaveShop1_feet';
 %folder = '';
 
-folder = 'NTOneLeaveShop1';
+% HOG Detector
+%folder = 'NTOneLeaveShop1';
+
+% Template Matching Detector
+folder = 'NTOneLeaveShop1TM';
+
 folder = sprintf('../../data/%s/',folder);
 
 % ground plane image
 gp_img_file = strcat(folder, 'gp.png');
 gp_img = imread(gp_img_file);
 
-% Id's correspondences
-gt_id_cor = 6; nt_id_cor = 2;      % cor1: Person 1
-gt_id_fro = 2; nt_id_fro = 2;      % fro1: Person 1
+% ID NTOneLeaveShop1
+% gt_id_cor = 6; nt_id_cor = 2;      % cor1: Person 1
+% gt_id_fro = 2; nt_id_fro = 2;      % fro1: Person 1
+
+% ID NTOneLeaveShop1NT
+gt_id_cor = 6; nt_id_cor = 6;      % cor1: Person 1
+gt_id_fro = 2; nt_id_fro = 1;      % fro1: Person 1
+
 
 %gt_id = 1; nt_id = 2;      % cor2: Person 1
 %gt_id = 5; nt_id = 11;     % cor2: Person 2
@@ -32,10 +42,6 @@ gt_fro_file = strcat(folder, 'GP_tracks_front.mat');
 
 load(gt_cor_file);
 load(gt_fro_file);
-
-ss = 4; % state size
-os = 2; % observation size
-THRS_F = 5;
 
 td = 77;
 
@@ -294,7 +300,7 @@ figure(43); plot_kalman_filter( mse_gt, fused.obs, winnerTakesAll, gp_img )
 [ mse_fus3, mse_gt ] = calculate_mse( weightedSum, fused.gt );
 figure(44); plot_kalman_filter( mse_gt, fused.obs, weightedSum, gp_img )
 
-disp(sprintf('%.4f & %.4f & %.4f & %.4f \\\\', mse_fro, mse_cor, mse_fus1, mse_fus2, mse_fus3));
+disp(sprintf('%.4f & %.4f & %.4f & %.4f & %.4f\\\\', mse_fro, mse_cor, mse_fus1, mse_fus2, mse_fus3));
 
 % Report purposes
 %addpath('../PlotUtils');
