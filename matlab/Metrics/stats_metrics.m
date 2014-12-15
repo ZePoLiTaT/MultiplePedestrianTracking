@@ -2,7 +2,7 @@ function [ tp, fp,fn ] = stats_metrics( gt, nt )
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
-    N_FRAMES = size(gt,2);
+    N_FRAMES = size(nt,2);
     
     tp = 0;
     fp = 0;
