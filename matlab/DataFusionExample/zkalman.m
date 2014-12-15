@@ -63,14 +63,20 @@ TRACK_THRS = 40;
 %   DATA FUUUUUU FUUU FUUU SION AHHHH
 %--------------------------------------------------------------------------
 
-%% Initialise the observations by drawing random observations from each
-% sensor. 
+%% Initialise the observations by drawing random observations from each sensor. 
 sensor1.obs = nt_pos_fro(:,td+1:end);
 sensor1.obs = [sensor1.obs, ones(2,td)*-1];
 sensor2.obs = nt_pos_cor;
 
+%Prueba proyectando sobre GT
+% sensor1.obs = gt_pos_fro(1:2,td+1:end);
+% sensor1.obs = [sensor1.obs, ones(2,td)*-1];
+% sensor2.obs = gt_pos_cor(1:2,:);
+
+
 sensor1.gt = gt_pos_fro(:,td+1:end);
 sensor1.gt = [sensor1.gt, ones(4,td)*-1];
+
 sensor1.gt = sensor1.gt(1:2, :);
 sensor2.gt = gt_pos_cor(1:2, :);
 

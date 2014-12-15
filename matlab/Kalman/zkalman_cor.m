@@ -39,7 +39,7 @@ THRS_F = 5;
 
 %% Initialise the observations by drawing random observations from each
 % sensor. 
-sensor2.obs = nt_pos_cor;
+sensor2.obs = nt_pos_cor; %gt_pos_cor(1:2,:);
 sensor2.gt = gt_pos_cor;
 
 %% Determine the number of iterations

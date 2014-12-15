@@ -84,6 +84,7 @@ figure(2); plot_kalman_filter( sensor2.gt, sensor2.obs, sensor2.predictions, gp_
 
 [ mse ] = calculate_mse( sensor2.predictions, {sensor2.gt} )
 
+
 % Calculate the MSE
 % ix_gt_zeros = all(sensor2.gt~=0);
 % ix_nt_zeros = all(sensor2.obs~=(-1));
