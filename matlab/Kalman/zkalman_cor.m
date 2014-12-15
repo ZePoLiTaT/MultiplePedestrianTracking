@@ -18,7 +18,7 @@ gp_img = imread(gp_img_file);
 %gt_id_cor = 6; nt_id_cor = 2;      % cor1: Person 1
 
 % Template Matching Detector
-gt_id_cor = 6; nt_id_cor = 2;      % cor1: Person 1
+gt_id_cor = 6; nt_id_cor = 6;      % cor1: Person 1
 
 % ----> 1. Naive tracker detections
 nt_cor_file = sprintf('../../data%s/NTracks_cor.txt',folder);
@@ -82,15 +82,17 @@ end
 % Plot the results
 figure(2); plot_kalman_filter( sensor2.gt, sensor2.obs, sensor2.predictions, gp_img )
 
+[ mse ] = calculate_mse( sensor2.predictions, {sensor2.gt} )
+
 % Calculate the MSE
-ix_gt_zeros = all(sensor2.gt~=0);
-ix_nt_zeros = all(sensor2.obs~=(-1));
-
-dnt = sensor2.gt([1 2],:) - sensor2.obs([1 2],:);
-dnt = dnt( :, ix_gt_zeros & ix_nt_zeros );
-mse_dnt = sqrt(sum(sum(dnt.^2))) / size(dnt,2)
-
-dfilt = sensor2.gt([1 2],:) - sensor2.predictions([1 2],:);
-dfilt = dfilt( :, ix_gt_zeros & ix_nt_zeros   );
-mse_filt = sqrt(sum(sum(dfilt.^2))) / size(dfilt,2)
+% ix_gt_zeros = all(sensor2.gt~=0);
+% ix_nt_zeros = all(sensor2.obs~=(-1));
+% 
+% dnt = sensor2.gt([1 2],:) - sensor2.obs([1 2],:);
+% dnt = dnt( :, ix_gt_zeros & ix_nt_zeros );
+% mse_dnt = sqrt(sum(sum(dnt.^2))) / size(dnt,2)
+% 
+% dfilt = sensor2.gt([1 2],:) - sensor2.predictions([1 2],:);
+% dfilt = dfilt( :, ix_gt_zeros & ix_nt_zeros   );
+% mse_filt = sqrt(sum(sum(dfilt.^2))) / size(dfilt,2)
 

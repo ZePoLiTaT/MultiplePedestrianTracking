@@ -82,17 +82,19 @@ end
 % Plot the results
 figure(2); plot_kalman_filter( sensor2.gt, sensor2.obs, sensor2.predictions, gp_img )
 
+[ mse ] = calculate_mse( sensor2.predictions, {sensor2.gt} )
+
 % Calculate the MSE
-ix_gt_zeros = all(sensor2.gt~=0);
-ix_nt_zeros = all(sensor2.obs~=(-1));
-
-dnt = sensor2.gt([1 2],:) - sensor2.obs([1 2],:);
-dnt = dnt( :, ix_gt_zeros & ix_nt_zeros );
-mse_dnt = sqrt(sum(sum(dnt.^2))) / size(dnt,2)
-
-dfilt = sensor2.gt([1 2],:) - sensor2.predictions([1 2],:);
-dfilt = dfilt( :, ix_gt_zeros & ix_nt_zeros   );
-mse_filt = sqrt(sum(sum(dfilt.^2))) / size(dfilt,2)
+% ix_gt_zeros = all(sensor2.gt~=0);
+% ix_nt_zeros = all(sensor2.obs~=(-1));
+% 
+% dnt = sensor2.gt([1 2],:) - sensor2.obs([1 2],:);
+% dnt = dnt( :, ix_gt_zeros & ix_nt_zeros );
+% mse_dnt = sqrt(sum(sum(dnt.^2))) / size(dnt,2)
+% 
+% dfilt = sensor2.gt([1 2],:) - sensor2.predictions([1 2],:);
+% dfilt = dfilt( :, ix_gt_zeros & ix_nt_zeros   );
+% mse_filt = sqrt(sum(sum(dfilt.^2))) / size(dfilt,2)
 
 
 % dsmooth = sensor2.gt([1 2],:) - xsmooth([1 2],:);
