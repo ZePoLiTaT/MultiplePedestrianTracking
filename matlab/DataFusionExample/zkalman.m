@@ -44,6 +44,7 @@ load(gt_cor_file);
 load(gt_fro_file);
 
 td = 77;
+TRACK_THRS = 40;
 
 %--------------------------------------------------------------------------
 %   FRONT
@@ -116,8 +117,9 @@ sensor2.predictions = zeros( size(sensor2.gt) );
 
 %% Fusioon strategy variables
 fused.predictions = zeros( size(sensor1.gt) );
-fused.gt = [sensor1.gt;sensor2.gt];
-fused.obs = [sensor1.obs;sensor2.obs];
+fused.gt = {sensor1.gt,sensor2.gt};
+fused.obs = {sensor1.obs;sensor2.obs};
+fused.obs2 = [sensor1.obs,sensor2.obs];
 
 prob1 = 0;
 prob2 = 0;
@@ -139,12 +141,12 @@ usePriors = 0;
 prior1 = 0;
 prior2 = 0;
 
-for t=INIT:END
+for t=INIT:END+TRACK_THRS
     
     % ---------------------------------------------------------------------
     % Prediccion KALMAN Sensor 1
     % ---------------------------------------------------------------------
-    if t >= first_det_frame_fro
+    if t >= first_det_frame_fro && t<= last_det_frame_fro + TRACK_THRS
         
         pred1 = kalman_predict(F, pred1);
         
@@ -162,7 +164,7 @@ for t=INIT:END
     % Prediccion KALMAN Sensor 2
     % ---------------------------------------------------------------------
     
-    if t >= first_det_frame_cor
+    if t >= first_det_frame_cor && t<= last_det_frame_cor + TRACK_THRS
         
         pred2 = kalman_predict(F, pred2);
         
@@ -204,7 +206,7 @@ for t=INIT:END
      elseif t == first_det_frame_fro 
         % First observation we have no prior, so use 0.5 for each sensor
         prior1 = 0.5;
-     elseif t > first_det_frame_cor
+     elseif t > first_det_frame_fro
         prior1 = marginalsWTA(1,t-1);
      end
      
@@ -250,7 +252,7 @@ for t=INIT:END
      elseif t == first_det_frame_fro 
         % First observation we have no prior, so use 0.5 for each sensor
         prior1 = 0.5;
-     elseif t > first_det_frame_cor
+     elseif t > first_det_frame_fro
         prior1 = marginalsWS(1,t-1);
      end
      
@@ -272,8 +274,14 @@ for t=INIT:END
     % Calculate our marginals
     px1 = sensor1Weight*prior1*prob1;
     px2 = sensor2Weight*prior2*prob2;
-    px1Norm = px1/(px1+px2);
-    px2Norm = px2/(px1+px2);
+    
+    if (px1+px2) > 0
+        px1Norm = px1/(px1+px2);
+        px2Norm = px2/(px1+px2);
+    else
+        px1Norm = marginalsWS(1,t-1);
+        px2Norm = marginalsWS(2,t-1);
+    end
     
     % Store them for t+1
     marginalsWS(1,t) = px1Norm;
@@ -284,21 +292,20 @@ for t=INIT:END
 end
 
 % Plot the results
-[ mse_fro, mse_gt ] = calculate_mse( sensor1.predictions, sensor1.gt );
-figure(40); plot_kalman_filter( mse_gt, sensor1.obs, sensor1.predictions, gp_img );
-
-[ mse_cor, mse_gt ] = calculate_mse( sensor2.predictions, sensor2.gt );
-figure(41); plot_kalman_filter( mse_gt, sensor2.obs, sensor2.predictions, gp_img )
-
+[ mse_fro, mse_gt ] = calculate_mse( sensor1.predictions, {sensor1.gt} );
+[ mse_cor, mse_gt ] = calculate_mse( sensor2.predictions, {sensor2.gt} );
 
 [ mse_fus1, mse_gt ] = calculate_mse( fused.predictions, fused.gt );
-figure(42); plot_kalman_filter( mse_gt, fused.obs, fused.predictions, gp_img )
-%
 [ mse_fus2, mse_gt ] = calculate_mse( winnerTakesAll, fused.gt );
-figure(43); plot_kalman_filter( mse_gt, fused.obs, winnerTakesAll, gp_img )
-
 [ mse_fus3, mse_gt ] = calculate_mse( weightedSum, fused.gt );
-figure(44); plot_kalman_filter( mse_gt, fused.obs, weightedSum, gp_img )
+
+
+figure(40); plot_kalman_filter( mse_gt, sensor1.obs, sensor1.predictions, gp_img );
+figure(41); plot_kalman_filter( mse_gt, sensor2.obs, sensor2.predictions, gp_img );
+
+figure(42); plot_kalman_filter( mse_gt, fused.obs2, fused.predictions, gp_img );
+figure(43); plot_kalman_filter( mse_gt, fused.obs2, winnerTakesAll, gp_img );
+figure(44); plot_kalman_filter( mse_gt, fused.obs2, weightedSum, gp_img );
 
 disp(sprintf('%.4f & %.4f & %.4f & %.4f & %.4f\\\\', mse_fro, mse_cor, mse_fus1, mse_fus2, mse_fus3));
 
