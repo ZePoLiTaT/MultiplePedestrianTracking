@@ -43,8 +43,9 @@ gt_fro_file = strcat(folder, 'GP_tracks_front.mat');
 load(gt_cor_file);
 load(gt_fro_file);
 
-td = 77;
-TRACK_THRS = 40;
+%td = 77;
+td = 67;
+TRACK_THRS = 20;
 
 %--------------------------------------------------------------------------
 %   FRONT
@@ -147,6 +148,7 @@ usePriors = 0;
 prior1 = 0;
 prior2 = 0;
 
+%figure(44); plot_kalman_filter( fused.gt, fused.obs, weightedSum, gp_img ); title('Weighted Sum')
 for t=INIT:END+TRACK_THRS
     
     % ---------------------------------------------------------------------
@@ -252,20 +254,21 @@ for t=INIT:END+TRACK_THRS
     % weight each posterior and then normalise the result to give us
     % a final weighting.
     
-     if t < first_det_frame_fro 
-        % Before any measurment nullify the weigth for this sensor
-        prior1 = 0;
-     elseif t == first_det_frame_fro 
+%      if t < first_det_frame_fro 
+%         % Before any measurment nullify the weigth for this sensor
+%         prior1 = 0;
+     if t == first_det_frame_fro
         % First observation we have no prior, so use 0.5 for each sensor
         prior1 = 0.5;
      elseif t > first_det_frame_fro
         prior1 = marginalsWS(1,t-1);
      end
      
-     if t < first_det_frame_cor 
-        % Before any measurment nullify the weigth for this sensor
-        prior2 = 0;     
-     elseif t == first_det_frame_cor
+%      if t < first_det_frame_cor 
+%         % Before any measurment nullify the weigth for this sensor
+%         prior2 = 0;     
+
+    if t == first_det_frame_cor
         % First observation we have no prior, so use 0.5 for each sensor
         prior2 = 0.5;
      else
@@ -276,10 +279,13 @@ for t=INIT:END+TRACK_THRS
         prior1 = 1;
         prior2 = 1;
     end
-     
+    
+%     prob1 = 1/( abs(prob1) + eps);
+%     prob2 = 1/( abs(prob2) + eps);
+
     % Calculate our marginals
-    px1 = sensor1Weight*prior1*prob1;
-    px2 = sensor2Weight*prior2*prob2;
+    px1 = prior1*prob1 * sensor1Weight;
+    px2 = prior2*prob2 * sensor2Weight;
     
     if (px1+px2) > 0
         px1Norm = px1/(px1+px2);
@@ -295,25 +301,28 @@ for t=INIT:END+TRACK_THRS
     
     % Calculate the final 'prediction' based on our weights
     weightedSum(:,t) = (px1Norm*pred1(1:2))+(px2Norm*pred2(1:2));  
+    
+    %figure(42); plot_kalman_filter( fused.gt, fused.obs, fused.predictions, gp_img ); title('Fused Observations')
+    %figure(44), hold on, plot(weightedSum(1,t),weightedSum(2,t),'r.')
 end
 
 % Plot the results
-[ mse_fro, mse_gt ] = calculate_mse( sensor1.predictions, {sensor1.gt} );
-[ mse_cor, mse_gt ] = calculate_mse( sensor2.predictions, {sensor2.gt} );
+[ mse_fro, ~ ] = calculate_mse( sensor1.predictions, {sensor1.gt} );
+[ mse_cor, ~ ] = calculate_mse( sensor2.predictions, {sensor2.gt} );
 
-[ mse_fus1, mse_gt ] = calculate_mse( fused.predictions, fused.gt );
-[ mse_fus2, mse_gt ] = calculate_mse( winnerTakesAll, fused.gt );
-[ mse_fus3, mse_gt ] = calculate_mse( weightedSum, fused.gt );
+[ mse_fus_obs, ~ ] = calculate_mse( fused.predictions, fused.gt );
+[ mse_fus_wta, ~ ] = calculate_mse( winnerTakesAll, fused.gt );
+[ mse_fus_wsu, ~ ] = calculate_mse( weightedSum, fused.gt );
 
 
-figure(40); plot_kalman_filter( mse_gt, sensor1.obs, sensor1.predictions, gp_img );
-figure(41); plot_kalman_filter( mse_gt, sensor2.obs, sensor2.predictions, gp_img );
+figure(40); plot_kalman_filter( {sensor1.gt}, {sensor1.obs}, sensor1.predictions, gp_img );
+figure(41); plot_kalman_filter( {sensor2.gt}, {sensor2.obs}, sensor2.predictions, gp_img );
 
-figure(42); plot_kalman_filter( mse_gt, fused.obs2, fused.predictions, gp_img );
-figure(43); plot_kalman_filter( mse_gt, fused.obs2, winnerTakesAll, gp_img );
-figure(44); plot_kalman_filter( mse_gt, fused.obs2, weightedSum, gp_img );
+figure(42); plot_kalman_filter( fused.gt, fused.obs, fused.predictions, gp_img ); title('Fused Observations')
+figure(43); plot_kalman_filter( fused.gt, fused.obs, winnerTakesAll, gp_img ); title('Winner Takes All')
+figure(44); plot_kalman_filter( fused.gt, fused.obs, weightedSum, gp_img ); title('Weighted Sum')
 
-disp(sprintf('%.4f & %.4f & %.4f & %.4f & %.4f\\\\', mse_fro, mse_cor, mse_fus1, mse_fus2, mse_fus3));
+disp(sprintf('%.4f & %.4f & %.4f & %.4f & %.4f\\\\', mse_fro, mse_cor, mse_fus_obs, mse_fus_wta, mse_fus_wsu));
 
 % Report purposes
 %addpath('../PlotUtils');
