@@ -80,7 +80,7 @@ for t=INIT:END
 end
 
 % Plot the results
-figure(2); plot_kalman_filter( sensor2.gt, sensor2.obs, sensor2.predictions, gp_img )
+figure(23); plot_kalman_filter( {sensor2.gt}, {sensor2.obs}, sensor2.predictions, gp_img )
 
 [ mse ] = calculate_mse( sensor2.predictions, {sensor2.gt} )
 

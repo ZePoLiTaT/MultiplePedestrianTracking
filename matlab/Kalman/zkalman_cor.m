@@ -15,7 +15,8 @@ gp_img_file = sprintf('../../data%s/OneLeaveShop1cor0100.jpg',folder);
 gp_img = imread(gp_img_file);
 
 % Id's correspondences
-%gt_id_cor = 6; nt_id_cor = 2;      % cor1: Person 1
+% Hog detector
+% gt_id_cor = 6; nt_id_cor = 2;      % cor1: Person 1
 
 % Template Matching Detector
 gt_id_cor = 6; nt_id_cor = 6;      % cor1: Person 1
@@ -84,7 +85,7 @@ for t=INIT:END
 end
 
 % Plot the results
-figure(2); plot_kalman_filter( sensor2.gt, sensor2.obs, sensor2.predictions, gp_img )
+figure(22); plot_kalman_filter( {sensor2.gt}, {sensor2.obs}, sensor2.predictions, gp_img )
 
 [ mse ] = calculate_mse( sensor2.predictions, {sensor2.gt} )
 
