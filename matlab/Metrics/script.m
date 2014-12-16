@@ -1,16 +1,22 @@
-folder = 'NTOneLeaveShop1TM';
+clc, clear,
+folder = 'NTOneLeaveShop1';
 folder = sprintf('../../data/%s/',folder);
 
-% ground plane image
-%gp_img_file = strcat(folder, 'gp.png');
-%gp_img = imread(gp_img_file);
+%DPM
+% gt_id_cor = 6; nt_id_cor = 6;      % cor1: Person 1
+% % gt_id_cor = 2; nt_id_cor = 2;      % cor1: Person 2
+% % gt_id_cor = 4; nt_id_cor = 0;      % cor1: Person 3
+% % gt_id_cor = 5; nt_id_cor = 9;      % cor1: Person 4
+% 
+% gt_id_fro = 2; nt_id_fro = 1;      % fro1: Person 1
 
-% Id's correspondences
-gt_id_cor = 6; nt_id_cor = 6;      % cor1: Person 1
-gt_id_fro = 2; nt_id_fro = 1;      % fro1: Person 1
+%HOG
+% gt_id_cor = 6; nt_id_cor = 2;      % cor1: Person 1
+% %gt_id_cor = 2; nt_id_cor = 4;      % cor1: Person 2
+% %gt_id_cor = 5; nt_id_cor = 1;      % cor1: Person 4
+% 
+% gt_id_fro = 2; nt_id_fro = 2;      % fro1: Person 1
 
-%gt_id = 1; nt_id = 2;      % cor2: Person 1
-%gt_id = 5; nt_id = 11;     % cor2: Person 2
 
 % ----> 1. Naive tracker detections
 nt_cor_file = strcat(folder, 'NTracks_cor.txt');
@@ -30,12 +36,21 @@ load(gt_cor_file);
 
 [ tp, fp,fn ] = stats_metrics( gt, nt )
 
+% statistics
+disp('cor');
+sensitivity = tp / (tp + fn)
+precision = tp / (tp + fp)
+
 % - fro
-
-disp('fro');
-
-[gt, nt, first_det_frame, last_det_frame] = ...
-    load_naive_tracks(nt_fro_file, tracks_fro, nt_id_fro, gt_id_fro );
-
-[ tp, fp,fn ] = stats_metrics( gt, nt )
+% 
+% 
+% [gt, nt, first_det_frame, last_det_frame] = ...
+%     load_naive_tracks(nt_fro_file, tracks_fro, nt_id_fro, gt_id_fro );
+% 
+% [ tp, fp, fn ] = stats_metrics( gt, nt )
+% 
+% % statistics
+% disp('fro');
+% sensitivity = tp / (tp + fn)
+% precision = tp / (tp + fp)
 
