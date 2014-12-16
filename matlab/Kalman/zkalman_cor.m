@@ -62,6 +62,8 @@ pred2 = [sensor2.obs(:,first_det_frame_cor); 0; 0]; % prior for tracker 2
 
 %% Initialise other variables up front for efficiency
 sensor2.predictions = zeros(size(sensor2.obs));
+sensor2.V = zeros(size(sensor2.obs));
+sensor2.VV = zeros(size(sensor2.obs));
 
 for t=INIT:END
     % ---------------------------------------------------------------------
@@ -71,7 +73,9 @@ for t=INIT:END
 
     % only update if there are observations
     if all(sensor2.obs(:,t) ~= -1 )
-        [ pred2, P2, prob2] = kalman_update(sensor2.obs(:,t), H, pred2, Q, R, F, P2);
+        [ pred2, P2, prob2, PP2] = kalman_update(sensor2.obs(:,t), H, pred2, Q, R, F, P2);
+%        sensor2.V(:,t) = P2;
+%        sensor2.VV(:,t) = PP2;
     else
         prob2 = 0;    
     end
@@ -84,15 +88,6 @@ figure(2); plot_kalman_filter( sensor2.gt, sensor2.obs, sensor2.predictions, gp_
 
 [ mse ] = calculate_mse( sensor2.predictions, {sensor2.gt} )
 
-% Calculate the MSE
-% ix_gt_zeros = all(sensor2.gt~=0);
-% ix_nt_zeros = all(sensor2.obs~=(-1));
-% 
-% dnt = sensor2.gt([1 2],:) - sensor2.obs([1 2],:);
-% dnt = dnt( :, ix_gt_zeros & ix_nt_zeros );
-% mse_dnt = sqrt(sum(sum(dnt.^2))) / size(dnt,2)
-% 
-% dfilt = sensor2.gt([1 2],:) - sensor2.predictions([1 2],:);
-% dfilt = dfilt( :, ix_gt_zeros & ix_nt_zeros   );
-% mse_filt = sqrt(sum(sum(dfilt.^2))) / size(dfilt,2)
+%[xsmooth, Vsmooth] = kalman_smoother(F, Q, sensor2.predictions);
+
 

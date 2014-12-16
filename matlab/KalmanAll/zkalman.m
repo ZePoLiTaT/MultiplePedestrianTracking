@@ -140,10 +140,10 @@ set(gcf,'PaperPosition',[0 0 3 3])
 % imshow('OneLeaveShop1cor0100.jpg');
 % %set(gca,'ydir','reverse')
 % %subplot(2,1,2)
-% hold on
+hold on
 % plot(x(1,ix_gt_zeros), x(2,ix_gt_zeros), 'ks-');
 % plot(y(1,ix_nt_zeros), y(2,ix_nt_zeros), 'g*');
-% plot(xsmooth(1,:), xsmooth(2,:), 'rx:');
+plot(xsmooth(1,:), xsmooth(2,:), 'wx:');
 % % for t=1:T
 % %     plotgauss2d(xsmooth(1:2,t), Vsmooth(1:2, 1:2, t)); 
 % % end

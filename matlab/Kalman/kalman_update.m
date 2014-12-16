@@ -1,4 +1,4 @@
-function [ xnew, Pnew, prob] = kalman_update( y, H, xpred, Q, R, F, P)
+function [ xnew, Pnew, prob, PPnew] = kalman_update( y, H, xpred, Q, R, F, P)
 %kalman_update Perofrms the update step of the Kalman filter
 % Inputs:
 %   y     : Observation
@@ -32,6 +32,7 @@ function [ xnew, Pnew, prob] = kalman_update( y, H, xpred, Q, R, F, P)
     
     xnew = xpred + K*e;
     Pnew = (eye(ss) - K*H)*P;
+    PPnew = (eye(ss) - K*H)*F*P;
     
     prob = gaussian_prob(e, zeros(1,length(e)), S, 0);
 
