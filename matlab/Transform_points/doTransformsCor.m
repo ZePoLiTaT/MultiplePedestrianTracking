@@ -4,8 +4,9 @@
 
 %close all
 
-%folder = 'NTOneLeaveShop1';
+%folder = 'GPlaneOneLeaveShop1_feet';
 folder = 'NTOneLeaveShop1TM';
+%folder = 'NTOneLeaveShop1TMCent';
 folder = sprintf('../../data/%s/',folder);
 
 % Ground Truth and NTracks file names

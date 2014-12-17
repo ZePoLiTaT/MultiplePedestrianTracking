@@ -6,6 +6,7 @@
 
 %folder = 'NTOneLeaveShop1';
 folder = 'NTOneLeaveShop1TM';
+%folder = 'NTOneLeaveShop1TMCent';
 folder = sprintf('../../data/%s/',folder);
 
 % Ground Truth and NTracks file names

@@ -1,4 +1,4 @@
-clc; clear; 
+%clc; clear all; 
 %close all;
 %addpath(genpath('.'))
 
@@ -10,23 +10,26 @@ clc; clear;
 
 % HOG Detector
 %folder = 'NTOneLeaveShop1';
+% % ID NTOneLeaveShop1
+%  gt_id_cor = 6; nt_id_cor = 2;      % cor1: Person 1
+%  gt_id_fro = 2; nt_id_fro = 2;      % fro1: Person 1
 
 % Template Matching Detector
 folder = 'NTOneLeaveShop1TM';
-
+%folder = 'NTOneLeaveShop1TMCent';
+% ID NTOneLeaveShop1NT
+gt_id_cor = 6; nt_id_cor = 6;      % cor1: Person 1
+gt_id_fro = 2; nt_id_fro = 1;      % fro1: Person 1
+ 
 folder = sprintf('../../data/%s/',folder);
 
 % ground plane image
 gp_img_file = strcat(folder, 'gp.png');
 gp_img = imread(gp_img_file);
 
-% ID NTOneLeaveShop1
-% gt_id_cor = 6; nt_id_cor = 2;      % cor1: Person 1
-% gt_id_fro = 2; nt_id_fro = 2;      % fro1: Person 1
 
-% ID NTOneLeaveShop1NT
-gt_id_cor = 6; nt_id_cor = 6;      % cor1: Person 1
-gt_id_fro = 2; nt_id_fro = 1;      % fro1: Person 1
+
+
 
 %gt_id = 1; nt_id = 2;      % cor2: Person 1
 %gt_id = 5; nt_id = 11;     % cor2: Person 2
@@ -44,7 +47,7 @@ load(gt_fro_file);
 
 td = 77;
 %td = 67;
-TRACK_THRS = 30;
+TRACK_THRS = 40;
 
 %--------------------------------------------------------------------------
 %   FRONT
@@ -131,23 +134,23 @@ prob1 = 0;
 prob2 = 0;
 
 % Winner takes all
-winnerTakesAll = zeros(2,N_OBSV);
+winnerTakesAll = zeros(2,END+TRACK_THRS-INIT);
 
 % Weighted sum 
-marginalsWTA = zeros(2,N_OBSV);
-marginalsWS = zeros(2,N_OBSV);
-marginalsSP = zeros(2,N_OBSV);
+marginalsWTA = zeros(2,END+TRACK_THRS-INIT);
+marginalsWS = zeros(2,END+TRACK_THRS-INIT);
+marginalsSP = zeros(2,END+TRACK_THRS-INIT);
 
 sensor1Weight = 0.5;
 sensor2Weight = 1-sensor1Weight;
-weightedSum = zeros(2,N_OBSV);
+weightedSum = zeros(2,END+TRACK_THRS-INIT);
 
 % Tunable parameters
 usePriors = 0;
 prior1 = 0;
 prior2 = 0;
 
-%figure(44); plot_kalman_filter( fused.gt, fused.obs, weightedSum, gp_img ); title('Weighted Sum')
+%figure(43); plot_kalman_filter( fused.gt, fused.obs, weightedSum, gp_img ); title('Weighted Sum')
 for t=INIT:END+TRACK_THRS
     
     % ---------------------------------------------------------------------
@@ -207,25 +210,25 @@ for t=INIT:END+TRACK_THRS
     %% Option 1: Use the 'Winner Takes All' strategy for choosing our resulting
     % ---------------------------------------------------------------------
     % prediction. 
-     if t < first_det_frame_fro 
-        % Before any measurment nullify the weigth for this sensor
-        prior1 = 0;
-     elseif t == first_det_frame_fro 
-        % First observation we have no prior, so use 0.5 for each sensor
-        prior1 = 0.5;
-     elseif t > first_det_frame_fro
-        prior1 = marginalsWTA(1,t-1);
-     end
-     
-     if t < first_det_frame_cor 
-        % Before any measurment nullify the weigth for this sensor
-        prior2 = 0;     
-     elseif t == first_det_frame_cor
-        % First observation we have no prior, so use 0.5 for each sensor
-        prior2 = 0.5;
-     else
-        prior2 = marginalsWTA(2,t-1);
-     end
+%      if t < first_det_frame_fro 
+%         % Before any measurment nullify the weigth for this sensor
+%         prior1 = 0;
+%      elseif t == first_det_frame_fro 
+%         % First observation we have no prior, so use 0.5 for each sensor
+%         prior1 = 0.5;
+%      elseif t > first_det_frame_fro
+%         prior1 = marginalsWTA(1,t-1);
+%      end
+%      
+%      if t < first_det_frame_cor 
+%         % Before any measurment nullify the weigth for this sensor
+%         prior2 = 0;     
+%      elseif t == first_det_frame_cor
+%         % First observation we have no prior, so use 0.5 for each sensor
+%         prior2 = 0.5;
+%      else
+%         prior2 = marginalsWTA(2,t-1);
+%      end
     
     if ~usePriors
         prior1 = 1;
@@ -238,41 +241,45 @@ for t=INIT:END+TRACK_THRS
     
     % These are our priors for t+1. We'll normalise them to prevent
     % underflow
-    marginalsWTA(1,t) = posterior1/(posterior1+posterior2);
-    marginalsWTA(2,t) = posterior2/(posterior1+posterior2);
-    
-    if posterior1 > posterior2
-        winnerTakesAll(:,t) = pred1(1:2);        
-    else
-        winnerTakesAll(:,t) = pred2(1:2);
+    if (posterior1+posterior2)  > 0
+        marginalsWTA(1,t) = posterior1/(posterior1+posterior2);
+        marginalsWTA(2,t) = posterior2/(posterior1+posterior2);
+        
+        if posterior1 > posterior2
+            winnerTakesAll(:,t) = pred1(1:2);        
+        else
+            winnerTakesAll(:,t) = pred2(1:2);
+        end
     end
+    
+    
     
     % ---------------------------------------------------------------------
     %% Option 2: Use the 'Weighted Sum' strategy.
     % ---------------------------------------------------------------------
     % weight each posterior and then normalise the result to give us
     % a final weighting.
-    
-%      if t < first_det_frame_fro 
-%         % Before any measurment nullify the weigth for this sensor
-%         prior1 = 0;
-     if t == first_det_frame_fro
-        % First observation we have no prior, so use 0.5 for each sensor
-        prior1 = 0.5;
-     elseif t > first_det_frame_fro
-        prior1 = marginalsWS(1,t-1);
-     end
-     
-%      if t < first_det_frame_cor 
-%         % Before any measurment nullify the weigth for this sensor
-%         prior2 = 0;     
-
-    if t == first_det_frame_cor
-        % First observation we have no prior, so use 0.5 for each sensor
-        prior2 = 0.5;
-     else
-        prior2 = marginalsWS(2,t-1);
-     end
+%     
+% %      if t < first_det_frame_fro 
+% %         % Before any measurment nullify the weigth for this sensor
+% %         prior1 = 0;
+%      if t == first_det_frame_fro
+%         % First observation we have no prior, so use 0.5 for each sensor
+%         prior1 = 0.5;
+%      elseif t > first_det_frame_fro
+%         prior1 = marginalsWS(1,t-1);
+%      end
+%      
+% %      if t < first_det_frame_cor 
+% %         % Before any measurment nullify the weigth for this sensor
+% %         prior2 = 0;     
+% 
+%     if t == first_det_frame_cor
+%         % First observation we have no prior, so use 0.5 for each sensor
+%         prior2 = 0.5;
+%      else
+%         prior2 = marginalsWS(2,t-1);
+%      end
     
     if ~usePriors
         prior1 = 1;
@@ -289,6 +296,10 @@ for t=INIT:END+TRACK_THRS
     if (px1+px2) > 0
         px1Norm = px1/(px1+px2);
         px2Norm = px2/(px1+px2);
+        
+        
+        % Calculate the final 'prediction' based on our weights
+        weightedSum(:,t) = (px1Norm*pred1(1:2))+(px2Norm*pred2(1:2));  
     else
         px1Norm = marginalsWS(1,t-1);
         px2Norm = marginalsWS(2,t-1);
@@ -298,11 +309,10 @@ for t=INIT:END+TRACK_THRS
     marginalsWS(1,t) = px1Norm;
     marginalsWS(2,t) = px2Norm;
     
-    % Calculate the final 'prediction' based on our weights
-    weightedSum(:,t) = (px1Norm*pred1(1:2))+(px2Norm*pred2(1:2));  
     
     %figure(42); plot_kalman_filter( fused.gt, fused.obs, fused.predictions, gp_img ); title('Fused Observations')
     %figure(44), hold on, plot(weightedSum(1,t),weightedSum(2,t),'r.')
+    %figure(43), hold on, plot(winnerTakesAll(1,t),winnerTakesAll(2,t),'r.')
 end
 
 % Plot the results
