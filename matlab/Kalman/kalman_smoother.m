@@ -9,15 +9,16 @@ function [xsmooth, Vsmooth, VVsmooth, loglik] = kalman_smoother(A, Q, xfilt, Vfi
 
 
 ss = length(A);
+[~,T]= size(xfilt);
 
 % set default params
 model = ones(1,T);
 u = [];
 B = [];
-
-% Forward pass
-[xfilt, Vfilt, VVfilt, loglik] = kalman_filter(y, A, C, Q, R, init_x, init_V, ...
-					       'model', model, 'u', u, 'B', B);
+% 
+% % Forward pass
+% [xfilt, Vfilt, VVfilt, loglik] = kalman_filter(y, A, C, Q, R, init_x, init_V, ...
+% 					       'model', model, 'u', u, 'B', B);
 
 
 xsmooth = zeros(ss, T);
@@ -25,12 +26,12 @@ Vsmooth = zeros(ss, ss, T);
 VVsmooth = zeros(ss, ss, T);
 
 % Backward pass
-xsmooth(:,T) = xfilt(:,T);
+xsmooth(1:2,T) = xfilt(:,T);
 Vsmooth(:,:,T) = Vfilt(:,:,T);
 %VVsmooth(:,:,T) = VVfilt(:,:,T);
 
 for t=T-1:-1:1
-  m = model(t+1);
+  m = 1; %model(t+1);
   if isempty(B)
     [xsmooth(:,t), Vsmooth(:,:,t), VVsmooth(:,:,t+1)] = ...
 	smooth_update(xsmooth(:,t+1), Vsmooth(:,:,t+1), xfilt(:,t), Vfilt(:,:,t), ...

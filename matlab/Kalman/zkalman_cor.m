@@ -20,6 +20,7 @@ gp_img = imread(gp_img_file);
 
 % Template Matching Detector
 gt_id_cor = 6; nt_id_cor = 6;      % cor1: Person 1
+%gt_id_cor = 2; nt_id_cor = 2;      % cor1: Person 3
 
 % ----> 1. Naive tracker detections
 nt_cor_file = sprintf('../../data%s/NTracks_cor.txt',folder);
@@ -56,15 +57,16 @@ P1 = eye(ss)*0.1; % Posterior error covariance for tracker 1
 P2 = eye(ss)*0.1; % Posterior error covariance for tracker 2
 Q = 0.1*eye(ss); % Process noise covariance (single target so the same for both trackers)
 H = [1 0 0 0; 0 1 0 0]; % Observation model
-R = 1*eye(os); % Measurement (observation) covariance
+R = .5*eye(os); % Measurement (observation) covariance
 
 pred2 = [sensor2.obs(:,first_det_frame_cor); 0; 0]; % prior for tracker 2
-
+sensor2.predictions = zeros(size(sensor2.obs));
 
 %% Initialise other variables up front for efficiency
-sensor2.predictions = zeros(size(sensor2.obs));
-sensor2.V = zeros(size(sensor2.obs));
-sensor2.VV = zeros(size(sensor2.obs));
+zz = size(pred2,1);
+zT = size(nt_pos_cor,2);
+sensor2.V = zeros(zz,zz,zT);
+sensor2.VV = zeros(zz,zz,zT);
 
 for t=INIT:END
     % ---------------------------------------------------------------------
@@ -75,8 +77,8 @@ for t=INIT:END
     % only update if there are observations
     if all(sensor2.obs(:,t) ~= -1 )
         [ pred2, P2, prob2, PP2] = kalman_update(sensor2.obs(:,t), H, pred2, Q, R, F, P2);
-%        sensor2.V(:,t) = P2;
-%        sensor2.VV(:,t) = PP2;
+        sensor2.V(:,:,t) = P2;
+        sensor2.VV(:,:,t) = PP2;
     else
         prob2 = 0;    
     end
@@ -85,10 +87,11 @@ for t=INIT:END
 end
 
 % Plot the results
-figure(22); plot_kalman_filter( {sensor2.gt}, {sensor2.obs}, sensor2.predictions, gp_img )
+figure(22); hold on, plot_kalman_filter( {sensor2.gt}, {sensor2.obs}, sensor2.predictions, gp_img )
 
-[ mse ] = calculate_mse( sensor2.predictions, {sensor2.gt} )
+[ mse,~,mse_N ] = calculate_mse( sensor2.predictions, {sensor2.gt} )
+[ mseobs,~,mseobs_N ] = calculate_mse( sensor2.obs, {sensor2.gt} )
 
-%[xsmooth, Vsmooth] = kalman_smoother(F, Q, sensor2.predictions);
+[xsmooth, Vsmooth] = kalman_smoother(F, Q, sensor2.predictions, sensor2.V, sensor2.VV);
 
 

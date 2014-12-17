@@ -1,4 +1,4 @@
-function [ mse, gt_min ] = calculate_mse( naive_track_list, grount_truth_list) %, xfilt )
+function [ mse, gt_min,mse_N ] = calculate_mse( naive_track_list, grount_truth_list) %, xfilt )
 %CALCULATE_MSE Summary of this function goes here
 %   Detailed explanation goes here
 

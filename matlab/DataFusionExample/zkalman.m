@@ -28,7 +28,6 @@ gp_img = imread(gp_img_file);
 gt_id_cor = 6; nt_id_cor = 6;      % cor1: Person 1
 gt_id_fro = 2; nt_id_fro = 1;      % fro1: Person 1
 
-
 %gt_id = 1; nt_id = 2;      % cor2: Person 1
 %gt_id = 5; nt_id = 11;     % cor2: Person 2
 
@@ -43,9 +42,9 @@ gt_fro_file = strcat(folder, 'GP_tracks_front.mat');
 load(gt_cor_file);
 load(gt_fro_file);
 
-%td = 77;
-td = 67;
-TRACK_THRS = 20;
+td = 77;
+%td = 67;
+TRACK_THRS = 30;
 
 %--------------------------------------------------------------------------
 %   FRONT

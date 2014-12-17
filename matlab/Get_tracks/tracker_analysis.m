@@ -18,7 +18,7 @@ gt_cor_file = strcat( folder, 'tracks_cor_fro.mat' );
 
 % Naive Tracker
 nt_cor_file = strcat( folder, 'NTracks_cor.txt' );
-nt_fro_file = strcat( folder, 'NTracks_fro.txt' );
+nt_fro_file = strcat( folder, 'NTracks_front.txt' );
 
 
 % % ----> 0. Ground Truth for all

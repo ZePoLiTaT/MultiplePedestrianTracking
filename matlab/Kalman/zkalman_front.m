@@ -1,4 +1,4 @@
-clc; clear; close all;
+%clc; clear; close all;
 %addpath(genpath('.'))
 
 %--------------------------------------------------------------------------
@@ -82,8 +82,9 @@ end
 % Plot the results
 figure(23); plot_kalman_filter( {sensor2.gt}, {sensor2.obs}, sensor2.predictions, gp_img )
 
-[ mse ] = calculate_mse( sensor2.predictions, {sensor2.gt} )
 
+[ mse,~,mse_N ] = calculate_mse( sensor2.predictions, {sensor2.gt} )
+[ mseobs,~,mseobs_N ] = calculate_mse( sensor2.obs, {sensor2.gt} )
 
 % Calculate the MSE
 % ix_gt_zeros = all(sensor2.gt~=0);
